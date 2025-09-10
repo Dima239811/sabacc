@@ -1,0 +1,56 @@
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding-left: 20px;
+
+  li {
+    list-style: decimal;
+    font: var(--font-m);
+  }
+}
+
+.slideTitle {
+  font: var(--font-l);
+}
+
+.slideText {
+  font: var(--font-m);
+  background: none;
+}
+
+.btnBack {
+  position: absolute;
+  width: 200px !important;
+  bottom: -60px;
+  right: 0;
+}
+
+.slideBack {
+  position: absolute;
+  bottom: 20px;
+  z-index: 2;
+  left: calc(50% - 70px);
+  transform: rotate(180deg);
+  width: 25px;
+  height: 25px;
+
+  img {
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.slideNext {
+  position: absolute;
+  bottom: 20px;
+  z-index: 2;
+  width: 25px;
+  height: 25px;
+  right: calc(50% - 70px);
+
+  img {
+    width: 100%;
+    height: 100%;
+  }
+}

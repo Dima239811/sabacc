@@ -1,0 +1,72 @@
+server:
+  port: 8080
+  host: "localhost"
+  protocol: "http"
+
+logging:
+  level:
+    root: INFO
+    ru.ngtu: DEBUG
+
+spring:
+  application:
+    name: sabacc
+
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://${spring.datasource.database.host}:${spring.datasource.database.port}/${spring.datasource.database.name}
+    password: postgres
+    username: postgres
+    database:
+      host: postgres
+      port: 5432
+      name: sabacc
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+
+  flyway:
+    enabled: true
+    validate-migration-naming: false
+    out-of-order: true
+
+user:
+  expiration-in-hours: 24
+
+security:
+  cors:
+    allowed-origin: "${server.protocol}://${server.host}:3000"
+
+websocket:
+  logging: true
+  stomp:
+    allowed-origin: "${server.protocol}://${server.host}:3000"
+  game:
+    allowed-origin: "${server.protocol}://${server.host}:3000"
+  broker:
+    destination-prefixes:
+      - "/topic"
+      - "/queue"
+      - "/input"
+    application-destination-prefixes:
+      - "/app"
+    user-destination-prefixes: "/user"
+
+
+cron:
+  user-cleanup: "0 */30 * * * *"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    prometheus:
+      enabled: true
+  prometheus:
+    metrics:
+      export:
+        enabled: true

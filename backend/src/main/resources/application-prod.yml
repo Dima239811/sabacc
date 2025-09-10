@@ -1,0 +1,15 @@
+server:
+  host: "103.90.75.122:88"
+  protocol: "http"
+
+security:
+  cors:
+    allowed-origin:
+      - http://localhost:3000
+      - ${server.protocol}://${server.host}
+
+websocket:
+  stomp:
+    allowed-origin: "${server.protocol}://${server.host}"
+  game:
+    allowed-origin: "${server.protocol}://${server.host}"
