@@ -45,8 +45,8 @@ dependencies {
     implementation 'io.jsonwebtoken:jjwt-jackson:0.10.5'
 
     implementation 'org.mapstruct:mapstruct:1.6.2'
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.18.0'
-    implementation 'com.fasterxml.jackson.module:jackson-module-kotlin:2.18.0'
+//    implementation 'com.fasterxml.jackson.core:jackson-databind:2.18.0'
+//    implementation 'com.fasterxml.jackson.module:jackson-module-kotlin:2.18.0'
 
     implementation 'org.flywaydb:flyway-core'
     implementation 'org.flywaydb:flyway-database-postgresql'

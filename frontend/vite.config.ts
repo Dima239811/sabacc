@@ -8,8 +8,11 @@ interface BuildOptions {
 
 export default ({ mode }: BuildOptions) => {
   const isDev = mode === 'development';
-  const port = process.env.VITE_PORT || 3000;
-  const apiUrl = isDev ? 'http://localhost:8080' : 'http://103.90.75.122:88';
+  const port = process.env.VITE_PORT || 5173;
+  const apiUrl = isDev ? (process.env.VITE_API_URL || 'http://localhost:8080'): 'http://103.90.75.122:88';
+  console.log(`API URL: ${apiUrl}`)
+
+
 
   return defineConfig({
     plugins: [svgr({ include: '**/*.svg', }), react()],
@@ -28,15 +31,16 @@ export default ({ mode }: BuildOptions) => {
                 usePolling: true, // ← Обязательно для Docker
                 interval: 1000    // ← Интервал опроса
         },
-    // Для проксирования API запросов в development
+        // ПРАВИЛЬНЫЙ proxy для разработки
           proxy: isDev ? {
             '/api': {
-              target: 'http://backend:8080',
+              target: 'http://localhost:8080', // ← localhost, а не backend!
               changeOrigin: true,
               secure: false,
+//               rewrite: (path) => path.replace(/^\/api/, '') // опционально: убрать /api
             },
             '/ws': {
-              target: 'http://backend:8080',
+              target: 'ws://localhost:8080', // ← localhost!
               changeOrigin: true,
               ws: true,
               secure: false,

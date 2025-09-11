@@ -9,6 +9,7 @@ import MainImg from '@/shared/assets/images/main.jpg';
 
 const App = () => {
     console.log("фронтенд запущен")
+    console.log("новая запись")
   const dispatch = useAppDispatch();
   
   useEffect(() => {

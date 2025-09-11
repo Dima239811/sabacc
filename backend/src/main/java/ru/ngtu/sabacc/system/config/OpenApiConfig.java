@@ -13,7 +13,7 @@ public class OpenApiConfig {
     @Bean
     public GroupedOpenApi customOpenAPI() {
         return GroupedOpenApi.builder()
-                .group("full api")
+                .group("full-api")
                 .pathsToMatch("/**")
                 .build();
     }

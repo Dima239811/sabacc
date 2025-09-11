@@ -11,8 +11,9 @@ COPY src/ src/
 # Устанавливаем зависимости
 RUN gradle dependencies --no-daemon
 
+
 # Монтируем исходники через volume для hot reload
 VOLUME /app/src
 
 # Запуск с continuous build
-CMD ["gradle", "bootRun", "--no-daemon", "--continuous"]
+CMD ["gradle", "bootRun", "--no-daemon", "--continuous", "-x", "test", "--debug-jvm"]

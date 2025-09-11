@@ -31,6 +31,7 @@ public class UserController {
 
     @PostMapping("/create/anonymous")
     public User createUser(@RequestBody CreateUserDto dto) {
+        System.out.println("создание пользователя на бэкенде");
         return userService.createUser(dto);
     }
 

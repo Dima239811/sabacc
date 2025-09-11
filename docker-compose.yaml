@@ -33,6 +33,7 @@ services:
     container_name: grafana
     ports:
       - "3000:3000"
+      - "35729:35729"
     volumes:
       - ./grafana-data:/var/lib/grafana
 
@@ -62,11 +63,14 @@ services:
       SPRING_DATASOURCE_DATABASE_PORT: 5432
       SPRING_DATASOURCE_DATABASE_NAME: *project-name
       SPRING_DEVTOOLS_RESTART_ENABLED: "true"  # ← Включаем DevTools
+      GRADLE_OPTS: "-DskipTests"
+      SPRING_DOCKER_COMPOSE_ENABLED: "false"
 
     volumes:
       - ./backend/src:/app/src
-      - ./backend/build/classes:/app/build/classes
       - ./backend/build.gradle:/app/build.gradle
+      - ./backend/settings.gradle:/app/settings.gradle
+      - ./backend/gradle:/app/gradle
 
   postgres:
     restart: always
@@ -78,7 +82,7 @@ services:
       POSTGRES_DB: *project-name
     ports:
       - "5432:5432"
-#      раскоментировал
+
     volumes:
       - ./postgres-data:/var/lib/postgresql/data
     healthcheck:
@@ -95,8 +99,8 @@ services:
 #      dockerfile: Dockerfile
 
     container_name: sabacc_frontend
-    ports:
-      - "5173:5173"
+#    ports:
+#      - "5173:5173"
     volumes:
       - ./nginx:/etc/nginx/conf.d
       - ./frontend:/app  # ← Hot reload для фронтенда
@@ -106,3 +110,4 @@ services:
 
     environment:
       - CHOKIDAR_USEPOLLING=true  # ← Важно для Docker
+      - VITE_API_URL=http://localhost:8080/api
