@@ -17,8 +17,8 @@ spring:
     driver-class-name: org.postgresql.Driver
 #    url: jdbc:postgresql://${spring.datasource.database.host}:${spring.datasource.database.port}/${spring.datasource.database.name}
 #    url: jdbc:postgresql://db:5432/sabacc
-#    url: jdbc:postgresql://localhost:5432/sabacc
-    url: jdbc:postgresql://${SPRING_DATASOURCE_DATABASE_HOST:localhost}:5432/${SPRING_DATASOURCE_DATABASE_NAME:sabacc}
+    url: jdbc:postgresql://localhost:5432/sabacc
+#    url: jdbc:postgresql://${SPRING_DATASOURCE_DATABASE_HOST:localhost}:5432/${SPRING_DATASOURCE_DATABASE_NAME:sabacc}
     password: Dima228*
     username: postgres
 #    database:
@@ -62,27 +62,27 @@ spring:
 user:
   expiration-in-hours: 24
 
-security:
-  cors:
-    allowed-origins:  # ← Исправлено на allowed-origins (множественное число)
-      - "http://localhost:3000"
-      - "http://localhost:5173"
-      - "http://192.168.0.102:5173"
-    allowed-methods:
-      - GET
-      - POST
-      - PUT
-      - DELETE
-      - OPTIONS
-    allowed-headers: "*"
-    allow-credentials: true
+#security:
+#  cors:
+#    allowed-origin:  # ← Исправлено на allowed-origins (множественное число)
+##      - "http://localhost:3000"
+#      - "http://localhost:5173"
+##      - "http://192.168.0.102:5173"
+##    allowed-method:
+##      - GET
+##      - POST
+##      - PUT
+##      - DELETE
+##      - OPTIONS
+##    allowed-header: "*"
+#    allow-credential: true
 
 websocket:
   logging: true
   stomp:
-    allowed-origin: "http://localhost:3000"  # ← Убраны переменные, т.к. могут не работать
+    allowed-origin: "http://localhost:5173"  # ← Убраны переменные, т.к. могут не работать
   game:
-    allowed-origin: "http://localhost:3000"
+    allowed-origin: "http://localhost:5173"
   broker:
     destination-prefixes:
       - "/topic"

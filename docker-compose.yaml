@@ -99,8 +99,8 @@ services:
 #      dockerfile: Dockerfile
 
     container_name: sabacc_frontend
-#    ports:
-#      - "5173:5173"
+    ports:
+      - "5173:5173"
     volumes:
       - ./nginx:/etc/nginx/conf.d
       - ./frontend:/app  # ← Hot reload для фронтенда
@@ -110,4 +110,4 @@ services:
 
     environment:
       - CHOKIDAR_USEPOLLING=true  # ← Важно для Docker
-      - VITE_API_URL=http://localhost:8080/api
+      - VITE_API_URL=http://localhost:8080
