@@ -8,8 +8,8 @@ import { GameState, GameStatus, TurnType } from '../types/game';
 
 export const useGameState = () => {
   const playerId = useSelector(selectCurrentUser)?.id;
-  const sessionId = playerId && useSetupRoom(playerId);
-  const client = useWebSocketGame(playerId, sessionId);
+  const sessionId = useSetupRoom(playerId);
+  const client = useWebSocketGame(playerId, sessionId || undefined);
 
   const [roomState, setRoomState] = useState<any>();
   const [gameState, setGameState] = useState<GameState | null>(null);
@@ -18,29 +18,31 @@ export const useGameState = () => {
   const [winnerId, setWinnerId] = useState()
   const [roundResult, setRoundResult] = useState()
 
-  const fetchGameState = async () => {
-    if (!sessionId) return;
+  const fetchGameState = async (id: string) => {
+    if (!id) return;
     try {
-      const data = (
-        await axios.get(`${__API__}/api/v1/room/game/current-state?sessionId=${sessionId}`)
-      ).data;
+      const data = (await axios.get(`${__API__}/v1/room/game/current-state?sessionId=${id}`)).data;
       setGameState(data);
-    } catch (err) {
-      console.log('data');
-      setTimeout(() => fetchGameState(), 500);
+    } catch (err: any) {
+      if (err.response?.status === 404) {
+        console.warn("Сессия не найдена, нужно создать новую или подождать");
+        return;
+      }
+      console.error(err);
     }
   };
 
+
   const leaveCurrentRoom = async () => {
     if (!sessionId) return;
-    await axios.post(`${__API__}/api/v1/room/leave/${sessionId}?userId=${playerId}`);
+    await axios.post(`${__API__}/v1/room/leave/${sessionId}?userId=${playerId}`);
     localStorage.removeItem('roomId');
     setGameState(null)
   };
 
   const fetchRoomState = async () => {
     if (!sessionId) return;
-    const data = (await axios.get(`${__API__}/api/v1/room/${sessionId}`)).data;
+    const data = (await axios.get(`${__API__}/v1/room/${sessionId}`)).data;
     setRoomState(data);
   };
 
@@ -69,13 +71,20 @@ export const useGameState = () => {
   useEffect(() => {
     if (client && sessionId) {
       const handleConnect = () => {
-        fetchRoomState();
-        fetchGameState();
+        fetchRoomState(sessionId);
+        fetchGameState(sessionId);
 
         // Подписка на обновление прогресса игры
         client.subscribe(`/queue/session/${sessionId}/game-progress`, (message) => {
-          fetchGameState();
-          fetchRoomState();
+          if (data.status === 'STARTED') {
+              setRoomState(prev => ({ ...prev, status: 'IN_PROGRESS' }));
+            } else if (data.status === 'PLAYER_DISCONNECTED') {
+              setRoomState(prev => ({ ...prev, status: 'PLAYER_DISCONNECTED' }));
+            } else if (data.status === 'PLAYER_RECONNECTED') {
+              setRoomState(prev => ({ ...prev, status: 'IN_PROGRESS' }));
+            }
+
+            fetchGameState(sessionId);
         });
 
         // Подписка на подтвержденные ходы
@@ -89,8 +98,8 @@ export const useGameState = () => {
             showDiceModal(null)
           }
 
-          fetchGameState();
-          fetchRoomState();
+          fetchGameState(sessionId);
+          fetchRoomState(sessionId);
         });
 
         client.subscribe(`/queue/session/${sessionId}/errors`, (message) => {
@@ -107,8 +116,8 @@ export const useGameState = () => {
           const data = JSON.parse(message.body);
           console.log(data)
           setRoundResult(data); // Сохраняем результаты раунда
-          fetchGameState();
-          fetchRoomState();
+          fetchGameState(sessionId);
+          fetchRoomState(sessionId);
         });
       };
 

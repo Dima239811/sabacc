@@ -10,8 +10,10 @@ import java.util.Optional;
 @RepositoryRestResource(exported = false)
 public interface SessionRoomRepository extends JpaRepository<SessionRoom, Long> {
     List<SessionRoom> findAllByPlayerFirstIdOrPlayerSecondId(Long playerFirst_id, Long playerSecond_id);
-    Optional<SessionRoom> findByPlayerFirstIdAndStatusNot(Long playerId, SessionRoomStatus status);
-    Optional<SessionRoom> findByPlayerFirstIdOrPlayerSecondIdAndStatusNot(Long playerFirstId,Long playerSecondId, SessionRoomStatus status);
+    //Optional<SessionRoom> findByPlayerFirstIdAndStatusNot(Long playerId, SessionRoomStatus status);
+    List<SessionRoom> findAllByPlayerFirstIdAndStatusNot(Long playerId, SessionRoomStatus status);
+
+//    Optional<SessionRoom> findByPlayerFirstIdOrPlayerSecondIdAndStatusNot(Long playerFirstId,Long playerSecondId, SessionRoomStatus status);
 
     @Query("""
         select r
@@ -22,4 +24,10 @@ public interface SessionRoomRepository extends JpaRepository<SessionRoom, Long> 
             r.playerSecond is null
     """)
     List<SessionRoom> findAllAvailableForJoin(SessionRoomStatus availableStatus);
+
+    List<SessionRoom> findByPlayerFirstIdOrPlayerSecondIdAndStatusNot(
+            Long playerFirstId,
+            Long playerSecondId,
+            SessionRoomStatus status
+    );
 }

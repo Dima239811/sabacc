@@ -44,7 +44,16 @@ export default ({ mode }: BuildOptions) => {
               changeOrigin: true,
               ws: true,
               secure: false,
-            }
+            },
+            '/api/game': {
+              target: 'http://localhost:8080/game',
+              changeOrigin: true,
+              ws: true,
+              secure: false,
+              rewrite: (path) => path.replace(/^\/api\/game/, '/game'),
+            },
+
+
           } : undefined
         },
     // Настройки для preview режима

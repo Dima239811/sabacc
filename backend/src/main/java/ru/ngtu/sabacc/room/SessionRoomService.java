@@ -49,15 +49,41 @@ public class SessionRoomService {
         return sessionRoomRepository.findAllByPlayerFirstIdOrPlayerSecondId(userId, userId);
     }
 
-    public Optional<SessionRoom> getUserActiveSessions(Long userId) {
-        return sessionRoomRepository.findByPlayerFirstIdOrPlayerSecondIdAndStatusNot(userId, userId, SessionRoomStatus.FINISHED);
+    public List<SessionRoom> getUserActiveSessions(Long userId) {
+        List<SessionRoom> sessions = sessionRoomRepository.findByPlayerFirstIdOrPlayerSecondIdAndStatusNot(
+                userId, userId, SessionRoomStatus.FINISHED
+        );
+        // Убираем сессии, где игрок первый, а второго нет
+        return sessions.stream()
+                .filter(s -> s.getPlayerFirst() != null && s.getPlayerSecond() != null)
+                .toList();
     }
 
+
+//    public Optional<SessionRoom> getUserActiveSessions(Long userId) {
+//        return sessionRoomRepository.findByPlayerFirstIdOrPlayerSecondIdAndStatusNot(userId, userId, SessionRoomStatus.FINISHED);
+//    }
+
     public List<SessionRoom> getAvailableRoomsForJoin(Long userId) {
-        if(userService.getUserById(userId) == null)
+        log.warn("WARN ВЫЗВАН МЕТОД В SessionRoomService");
+        System.out.println("CALL getAvailableRoomsForJoin");
+
+        if (userService.getUserById(userId) == null) {
             throw new EntityNotFoundException(User.class, userId);
-        throwIfUserHaveUnfinishedSessions(userId);
-        return sessionRoomRepository.findAllAvailableForJoin(SessionRoomStatus.WAITING_SECOND_USER);
+        }
+
+        // Проверка активных сессий
+        List<SessionRoom> activeSessions = getUserActiveSessions(userId);
+        if (!activeSessions.isEmpty()) {
+            System.out.println("есть незавершенные сессии");
+            throw new UserHaveUnfinishedSessionException(userId);
+        }
+
+        // Получаем все доступные комнаты
+        List<SessionRoom> availableRooms = sessionRoomRepository.findAllAvailableForJoin(SessionRoomStatus.WAITING_SECOND_USER);
+        log.info("Available rooms for user {}: {}", userId, availableRooms);
+
+        return availableRooms;
     }
 
     @Transactional
@@ -65,8 +91,11 @@ public class SessionRoomService {
         User user = userService.getUserById(userId);
 
         log.info("User [{}] creating session room", userId);
-        sessionRoomRepository.findByPlayerFirstIdAndStatusNot(userId, SessionRoomStatus.FINISHED)
-                .ifPresent(sessionRoom -> {throw new UnfinishedSessionException(userId);});
+
+        List<SessionRoom> unfinished = sessionRoomRepository.findAllByPlayerFirstIdAndStatusNot(userId, SessionRoomStatus.FINISHED);
+        if (!unfinished.isEmpty()) {
+            throw new UnfinishedSessionException(userId);
+        }
 
         SessionRoom newSessionRoom = SessionRoom.builder()
                 .playerFirst(user)
@@ -74,12 +103,13 @@ public class SessionRoomService {
                 .build();
 
         SessionRoom createdSessionRoom = sessionRoomRepository.saveAndFlush(newSessionRoom);
-        log.info("Session room: id={} was created", newSessionRoom.getId());
+        log.info("Session room: id={} was created", createdSessionRoom.getId());
 
         eventPublisher.publishEvent(new SessionRoomCreatedEvent(createdSessionRoom));
 
         return createdSessionRoom;
     }
+
 
     @Transactional
     public void joinSession(Long sessionId, Long userId) {
@@ -125,10 +155,12 @@ public class SessionRoomService {
 
         //send finish dto to message exchanger
         long winnerId;
-        if(sessionRoom.getPlayerFirst().getId().equals(userId))
-            winnerId = sessionRoom.getPlayerSecond().getId();
-        else
+        User secondPlayer = sessionRoom.getPlayerSecond();
+        if(sessionRoom.getPlayerFirst().getId().equals(userId)) {
+            winnerId = (secondPlayer != null) ? secondPlayer.getId() : null;
+        } else {
             winnerId = sessionRoom.getPlayerFirst().getId();
+        }
 
         eventPublisher.publishEvent(new PlayerLeftSessionEvent(roomId, userId, winnerId));
 
@@ -254,17 +286,20 @@ public class SessionRoomService {
     }
 
     private void throwIfUserHaveUnfinishedSessions(Long userId) {
-        getUserActiveSessions(userId)
-                .ifPresent(s -> {
-                    throw new UserHaveUnfinishedSessionException(userId);
-                });
+        List<SessionRoom> activeSessions = sessionRoomRepository.findByPlayerFirstIdOrPlayerSecondIdAndStatusNot(
+                userId, userId, SessionRoomStatus.FINISHED
+        );
+        if (!activeSessions.isEmpty()) {
+            throw new UserHaveUnfinishedSessionException(userId);
+        }
     }
 
+
     private boolean roomContainsUser(SessionRoom sessionRoom, Long userId) {
-        if(sessionRoom.getPlayerFirst().getId().equals(userId))
+        if (sessionRoom.getPlayerFirst().getId().equals(userId))
             return true;
         User secondPlayer = sessionRoom.getPlayerSecond();
-        if(secondPlayer == null)
+        if (secondPlayer == null)
             return false;
 
         return secondPlayer.getId().equals(userId);
