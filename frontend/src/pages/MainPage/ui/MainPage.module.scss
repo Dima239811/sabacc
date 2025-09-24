@@ -12,3 +12,19 @@
   font-size: 120px;
   line-height: 110px;
 }
+
+.link {
+  display: inline-block;
+  margin: 16px 0;
+  padding: 8px 24px;
+  background: #eee;
+  color: #333;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: bold;
+  transition: background 0.2s;
+}
+
+.link:hover {
+  background: #ccc;
+}
