@@ -33,7 +33,7 @@ export const useGameState = () => {
   const fetchGameState = async (id?: string | number) => {
     if (!id) return;
     if (!roomState || roomState.status === GameStatus.WAITING_SECOND_USER) {
-      setGameState(null);
+      //setGameState(null);
       return;
     }
     try {

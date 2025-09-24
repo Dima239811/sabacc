@@ -1,80 +1,76 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const API_BASE = 'http://localhost:8080/api'; // Базовый URL бэкенда
+const API_BASE = 'http://localhost:8080/api/v1/room'; // обновил путь под контроллер
 
 export const useSetupRoom = (playerId: number) => {
   const [sessionId, setSessionId] = useState<number | undefined>(undefined);
 
   useEffect(() => {
+    if (!playerId) return;
+
     const leaveAllRooms = async () => {
       localStorage.removeItem('roomId');
       try {
-        await axios.post(`${API_BASE}/v1/room/leave/all?userId=${playerId}`);
+        await axios.post(`${API_BASE}/leave/all?userId=${playerId}`);
       } catch (error) {
-        console.warn('Ошибка при выходе из комнат, продолжаем работу', error);
+        console.warn('Ошибка при выходе из всех комнат', error);
       }
     };
 
+    const setupRoomAndWebSocket = async () => {
+      let roomId: string | undefined = localStorage.getItem('roomId') ?? undefined;
 
-const setupRoomAndWebSocket = async () => {
-  let roomId: string | undefined = localStorage.getItem('roomId') ?? undefined;
-
-  // Проверка последней комнаты
-  if (roomId) {
-    try {
-      const data = (await axios.get(`${API_BASE}/v1/room/${roomId}`)).data;
-      if (data.status === 'FINISHED' ||
-          (data.playerFirst?.id !== playerId && data.playerSecond?.id !== playerId)) {
-        roomId = undefined;
-      }
-    } catch (error) {
-      console.error('Ошибка при получении информации о комнате:', error);
-      roomId = undefined;
-    }
-  }
-
-  // Если нет комнаты, ищем доступную
-  if (!roomId) {
-    let availableRooms: any[] = [];
-    try {
-      const availableRoomsResponse = await axios.get(`${API_BASE}/v1/room/available-for-join?userId=${playerId}`);
-      availableRooms = availableRoomsResponse.data;
-
-      // ⚡ вот здесь выводим все комнаты, которые пришли с сервера
-      console.log('Доступные комнаты с сервера:', availableRooms);
-
-    } catch (error) {
-      console.error('Ошибка при получении доступных комнат:', error);
-      await leaveAllRooms();
-    }
-
-    roomId = availableRooms.length ? availableRooms[0].id : undefined;
-
-    try {
+      // Проверка комнаты из localStorage
       if (roomId) {
-        await axios.post(`${API_BASE}/v1/room/${roomId}/join?userId=${playerId}`);
-      } else {
-        const roomResponse = await axios.post(`${API_BASE}/v1/room/create?userId=${playerId}`);
-        roomId = roomResponse.data.id;
+        try {
+          const data = (await axios.get(`${API_BASE}/${roomId}`)).data;
+          if (
+            data.status === 'FINISHED' ||
+            (data.playerFirst?.id !== playerId && data.playerSecond?.id !== playerId)
+          ) {
+            roomId = undefined;
+          }
+        } catch (error) {
+          console.error('Ошибка при получении информации о комнате:', error);
+          roomId = undefined;
+        }
       }
-    } catch (error) {
-      console.error('Ошибка при входе/создании комнаты:', error);
-      roomId = undefined;
-    }
-  }
 
-  if (roomId) {
-    localStorage.setItem('roomId', roomId);
-    setSessionId(+roomId);
-  }
-};
+      // Если нет комнаты — ищем доступную
+      if (!roomId) {
+        try {
+          const availableRoomsResponse = await axios.get(`${API_BASE}/available-for-join?userId=${playerId}`);
+          const availableRooms = availableRoomsResponse.data;
+          console.log('Доступные комнаты с сервера:', availableRooms);
 
+          roomId = availableRooms.length ? availableRooms[0].id : undefined;
 
+          if (roomId) {
+            try {
+              await axios.post(`${API_BASE}/${roomId}/join?userId=${playerId}`);
+            } catch (error: any) {
+              console.error('Ошибка при join:', error);
+              roomId = undefined;
+            }
+          } else {
+            const roomResponse = await axios.post(`${API_BASE}/create?userId=${playerId}`);
+            roomId = roomResponse.data.id;
+          }
+        } catch (error) {
+          console.error('Ошибка при получении доступных комнат или создании:', error);
+          await leaveAllRooms();
+        }
+      }
 
-    if (playerId) {
-      setupRoomAndWebSocket();
-    }
+      // Сохраняем roomId
+      if (roomId) {
+        localStorage.setItem('roomId', roomId);
+        setSessionId(+roomId);
+      }
+    };
+
+    setupRoomAndWebSocket();
   }, [playerId]);
 
   return sessionId;
