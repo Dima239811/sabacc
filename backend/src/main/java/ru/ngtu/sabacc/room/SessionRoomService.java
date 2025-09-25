@@ -147,38 +147,58 @@ public class SessionRoomService {
     @Transactional
     public void leaveRoom(Long roomId, Long userId) {
         log.info("User [{}] leaving session [{}]", userId, roomId);
+        log.info("User leave");
 
         SessionRoom sessionRoom = getRoomById(roomId);
 
-        if(!roomContainsUser(sessionRoom, userId))
+        if (!roomContainsUser(sessionRoom, userId)) {
             throw new PlayerNotRelatedToSessionException(roomId, userId);
-
-        //send finish dto to message exchanger
-        long winnerId;
-        User secondPlayer = sessionRoom.getPlayerSecond();
-        if(sessionRoom.getPlayerFirst().getId().equals(userId)) {
-            winnerId = (secondPlayer != null) ? secondPlayer.getId() : null;
-        } else {
-            winnerId = sessionRoom.getPlayerFirst().getId();
         }
 
-        eventPublisher.publishEvent(new PlayerLeftSessionEvent(roomId, userId, winnerId));
+        // Если выходит первый игрок
+        if (sessionRoom.getPlayerFirst().getId().equals(userId)) {
+            if (sessionRoom.getPlayerSecond() != null) {
+                // переносим второго в "первого"
+                User newFirst = sessionRoom.getPlayerSecond();
+                sessionRoom.setPlayerFirst(newFirst);
+                sessionRoom.setPlayerSecond(null);
+                sessionRoom.setStatus(SessionRoomStatus.WAITING_SECOND_USER);
+                sessionRoomRepository.saveAndFlush(sessionRoom);
 
-        SessionRoomStatus status = sessionRoom.getStatus();
-
-        if(status.equals(SessionRoomStatus.FINISHED))
+                Long winnerId = newFirst.getId(); // считаем вторым победителем
+                eventPublisher.publishEvent(new PlayerLeftSessionEvent(roomId, userId, winnerId));
+            } else {
+                // если никого не осталось → удаляем комнату
+                sessionRoom.setStatus(SessionRoomStatus.FINISHED);
+                deleteSessionRoom(sessionRoom);
+                log.info("Никого не осталось в комнате [{}], событие PlayerLeftSessionEvent не публикуется", roomId);
+            }
             return;
+        }
 
-        if(status.equals(SessionRoomStatus.ALL_USERS_JOINED)
-            && !sessionRoom.getPlayerFirst().getId().equals(userId)) {
+        // Если выходит второй игрок
+        if (sessionRoom.getPlayerSecond() != null && sessionRoom.getPlayerSecond().getId().equals(userId)) {
+            Long winnerId = sessionRoom.getPlayerFirst() != null ? sessionRoom.getPlayerFirst().getId() : null;
+
             sessionRoom.setPlayerSecond(null);
             sessionRoom.setStatus(SessionRoomStatus.WAITING_SECOND_USER);
             sessionRoomRepository.saveAndFlush(sessionRoom);
+
+            if (winnerId != null) {
+                eventPublisher.publishEvent(new PlayerLeftSessionEvent(roomId, userId, winnerId));
+            } else {
+                log.info("Победителя нет для комнаты [{}], событие PlayerLeftSessionEvent не публикуется", roomId);
+            }
             return;
         }
 
-        deleteSessionRoom(sessionRoom);
+        // На всякий случай — если пользователь не первый и не второй
+        log.warn("User [{}] не найден в комнате [{}] при выходе", userId, roomId);
     }
+
+
+
+
 
     @Transactional
     public void deleteSessionRoomById(Long roomId) {

@@ -46,7 +46,7 @@ public class GameSessionService {
     }
 
     public void makeTurn(TurnDto turnDTO) {
-        long sessionId = turnDTO.getSessionId();
+        Long sessionId = turnDTO.getSessionId();
         checkIfSessionExists(sessionId);
         activeSessions.get(sessionId).tryMakeTurn(turnDTO);
     }
