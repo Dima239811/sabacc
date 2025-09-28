@@ -49,6 +49,8 @@ public class SessionRoomService {
         return sessionRoomRepository.findAllByPlayerFirstIdOrPlayerSecondId(userId, userId);
     }
 
+
+
     public List<SessionRoom> getUserActiveSessions(Long userId) {
         List<SessionRoom> sessions = sessionRoomRepository.findByPlayerFirstIdOrPlayerSecondIdAndStatusNot(
                 userId, userId, SessionRoomStatus.FINISHED
@@ -271,14 +273,13 @@ public class SessionRoomService {
 
     @EventListener(SessionFinishedEvent.class)
     void onSessionFinished(SessionFinishedEvent event) {
-        try {
-            SessionRoom sessionRoom = getRoomById(event.sessionId());
+        SessionRoom sessionRoom = getRoomById(event.sessionId());
+        if (sessionRoom.getStatus() != SessionRoomStatus.FINISHED) {
             updateSessionStatus(sessionRoom, SessionRoomStatus.FINISHED);
             sessionRoomRepository.saveAndFlush(sessionRoom);
-        } catch (Exception e) {
-            log.error("[SessionRoomService] : Exception raised when handling session finished event: {}", e.getMessage());
         }
     }
+
 
     private SessionRoom switchPlayerSocketConnected(Long sessionId, Long playerId, boolean value) {
         SessionRoom sessionRoom = sessionRoomRepository.findById(sessionId)

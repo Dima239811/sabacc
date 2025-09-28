@@ -54,6 +54,7 @@ export const useGameState = () => {
     try {
       await axios.post(`${__API__}/v1/room/leave/${sessionId}?userId=${playerId}`);
       localStorage.removeItem('roomId');
+      console.log("player with " + this.playerId + " leave room " + sessionId);
       setGameState(null);
       setRoomState(null);
     } catch (err) {
