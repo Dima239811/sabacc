@@ -21,7 +21,7 @@ const GamePage = () => {
   let loader = null;
 
   if (!client) {
-    loader = <div className={classNames(cls.loader, {}, [])}>Проблема с вебсокетом</div>;
+    loader = <div className={classNames(cls.loader, {}, [])}>Подключение к серверу</div>;
   } else if (!roomState) {
     loader = <div className={classNames(cls.loader, {}, [])}>Создание комнаты...</div>;
   } else if (roomState.status === 'WAITING_SECOND_USER') {

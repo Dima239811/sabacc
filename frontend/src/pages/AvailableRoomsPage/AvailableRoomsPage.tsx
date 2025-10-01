@@ -32,24 +32,33 @@ const AvailableRoomsPage: React.FC = () => {
 
 
   useEffect(() => {
-      setLoading(true);
-      axios.get(`${__API__}/v1/room/all`)
-        .then(res => {
-          const formattedRooms: RoomInfo[] = res.data.map((room: any) => ({
-            id: room.id,
-            status: room.status,
-            playerFirstConnected: room.playerFirstConnected,
-            playerSecondConnected: room.playerSecondConnected ?? false,
-            playerSecondId: room.playerSecond?.id ?? null,
-          }));
-          setRooms(formattedRooms);
-          setLoading(false);
-        })
-        .catch(err => {
-          setError('Ошибка загрузки комнат');
-          setLoading(false);
-        });
-    }, []);
+    setLoading(true);
+    axios.get(`${__API__}/v1/room/all`)
+      .then(res => {
+        // Форматируем комнаты
+        const formattedRooms: RoomInfo[] = res.data.map((room: any) => ({
+          id: room.id,
+          status: room.status,
+          playerFirstConnected: room.playerFirstConnected,
+          playerSecondConnected: room.playerSecondConnected ?? false,
+          playerSecondId: room.playerSecond?.id ?? null,
+        }));
+
+        // Оставляем только реально доступные для присоединения комнаты
+        const availableRooms = formattedRooms.filter(room =>
+          room.status === RoomStatus.WAITING_SECOND_USER &&
+          (!room.playerSecondConnected && !room.playerSecondId)
+        );
+
+        setRooms(availableRooms);
+        setLoading(false);
+      })
+      .catch(err => {
+        setError('Ошибка загрузки комнат');
+        setLoading(false);
+      });
+  }, []);
+
 
     const handleJoinRoom = (roomId: number | string) => {
       if (!currentUser) {

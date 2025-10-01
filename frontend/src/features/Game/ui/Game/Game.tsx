@@ -91,6 +91,13 @@ export const Game = memo(({
     }
   }, [winnerId, roundResult]);
 
+  useEffect(() => {
+    if (gameState) {
+      console.log('[DEBUG] Текущее состояние игры:', gameState);
+    }
+  }, [gameState]);
+
+
   // Закрытие модалки раунда
   const handleCloseRoundModal = () => {
     fetchGameState();

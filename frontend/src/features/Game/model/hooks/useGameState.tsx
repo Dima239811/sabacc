@@ -32,12 +32,14 @@ export const useGameState = () => {
   // Получаем состояние игры (только если статус комнаты подходящий)
   const fetchGameState = async (id?: string | number) => {
     if (!id) return;
+    console.log("получаем состояние игры В fetchGameState() useGameState")
     if (!roomState || roomState.status === GameStatus.WAITING_SECOND_USER) {
       //setGameState(null);
       return;
     }
     try {
       const data = (await axios.get(`${__API__}/v1/room/game/current-state?sessionId=${id}`)).data;
+      console.log('[DEBUG] fetchGameState', data);
       setGameState(data);
     } catch (err: any) {
       if (err.response?.status === 404) {
@@ -54,6 +56,7 @@ export const useGameState = () => {
     try {
       await axios.post(`${__API__}/v1/room/leave/${sessionId}?userId=${playerId}`);
       localStorage.removeItem('roomId');
+      console.log("ПОКИДАЕМ ИГРУ В LEAVECURRENTROOM() useGameState")
       console.log("player with " + this.playerId + " leave room " + sessionId);
       setGameState(null);
       setRoomState(null);
@@ -103,8 +106,9 @@ export const useGameState = () => {
         // Подписка на обновление прогресса игры
         client.subscribe(`/queue/session/${sessionId}/game-progress`, (message) => {
           const data = JSON.parse(message.body);
+          console.log('[WS] Получен статус игры:', data.status);
           setRoomState((prev: any) => ({ ...prev, status: data.status }));
-          fetchRoomState(sessionId);
+          //fetchRoomState(sessionId);
           fetchGameState(sessionId);
         });
 
@@ -124,6 +128,8 @@ export const useGameState = () => {
         client.subscribe(`/queue/session/${sessionId}/game-results`, (message) => {
           const data = JSON.parse(message.body);
           setWinnerId(data.winnerId);
+          localStorage.removeItem('roomId');
+          console.log('[INFO] Игра завершена — roomId удалён из localStorage по событию game-results');
         });
 
         // Результаты раунда
@@ -144,6 +150,18 @@ export const useGameState = () => {
       setIsLoading(false);
     }
   }, [client, sessionId, playerId]);
+
+  useEffect(() => {
+    if (roomState?.status === GameStatus.FINISHED) {
+      console.log('[INFO] Комната завершена, сбрасываем состояние игрока');
+      setGameState(null);
+      setRoomState(null);
+      setDiceDetails(null);
+      localStorage.removeItem('roomId');
+    }
+  }, [roomState?.status]);
+
+
 
   const isGameInProgress = () => {
     const status = roomState?.status;

@@ -16,14 +16,17 @@ public interface SessionRoomRepository extends JpaRepository<SessionRoom, Long> 
 //    Optional<SessionRoom> findByPlayerFirstIdOrPlayerSecondIdAndStatusNot(Long playerFirstId,Long playerSecondId, SessionRoomStatus status);
 
     @Query("""
-        select r
-        from SessionRoom r
-        where
-            r.status=:availableStatus
-        and
-            r.playerSecond is null
-    """)
+    select r
+    from SessionRoom r
+    where
+        r.status=:availableStatus
+    and
+        r.playerSecond is null
+    and
+        r.status <> 'FINISHED'
+""")
     List<SessionRoom> findAllAvailableForJoin(SessionRoomStatus availableStatus);
+
 
     List<SessionRoom> findByPlayerFirstIdOrPlayerSecondIdAndStatusNot(
             Long playerFirstId,

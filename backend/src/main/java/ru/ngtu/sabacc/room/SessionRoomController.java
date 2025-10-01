@@ -35,7 +35,8 @@ public class SessionRoomController {
 
     @GetMapping("/available-for-join")
     public List<SessionRoom> getAvailableRoomsForJoin(@RequestParam Long userId) {
-        System.out.println("вызов aviliable-for-join з sessionroomcontorller");
+        System.out.println("вызов aviliable-for-join з sessionroomcontorller для userId=" + userId);
+        System.out.println("новый лог в котроллере");
         return roomService.getAvailableRoomsForJoin(userId);
     }
 

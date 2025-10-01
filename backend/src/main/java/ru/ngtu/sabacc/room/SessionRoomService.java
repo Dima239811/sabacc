@@ -51,21 +51,24 @@ public class SessionRoomService {
 
 
 
+    // Возвращает только реально активные сессии пользователя
     public List<SessionRoom> getUserActiveSessions(Long userId) {
         List<SessionRoom> sessions = sessionRoomRepository.findByPlayerFirstIdOrPlayerSecondIdAndStatusNot(
                 userId, userId, SessionRoomStatus.FINISHED
         );
-        // Убираем сессии, где игрок первый, а второго нет
-        return sessions.stream()
-                .filter(s -> s.getPlayerFirst() != null && s.getPlayerSecond() != null)
+
+        List<SessionRoom> activeSessions = sessions.stream()
+                .filter(s -> (s.getPlayerFirst().getId().equals(userId) && s.isPlayerFirstConnected())
+                        || (s.getPlayerSecond() != null && s.getPlayerSecond().getId().equals(userId) && s.isPlayerSecondConnected()))
                 .toList();
+
+        log.info("User [{}] active sessions (connected): {}", userId, activeSessions.stream().map(s -> s.getId()).toList());
+
+        return activeSessions;
     }
 
 
-//    public Optional<SessionRoom> getUserActiveSessions(Long userId) {
-//        return sessionRoomRepository.findByPlayerFirstIdOrPlayerSecondIdAndStatusNot(userId, userId, SessionRoomStatus.FINISHED);
-//    }
-
+    // getAvailableRoomsForJoin с логированием активных сессий
     public List<SessionRoom> getAvailableRoomsForJoin(Long userId) {
         log.warn("WARN ВЫЗВАН МЕТОД В SessionRoomService");
         System.out.println("CALL getAvailableRoomsForJoin");
@@ -77,13 +80,13 @@ public class SessionRoomService {
         // Проверка активных сессий
         List<SessionRoom> activeSessions = getUserActiveSessions(userId);
         if (!activeSessions.isEmpty()) {
-            System.out.println("есть незавершенные сессии");
+            System.out.println("Есть незавершенные сессии: " + activeSessions.stream().map(SessionRoom::getId).toList());
             throw new UserHaveUnfinishedSessionException(userId);
         }
 
         // Получаем все доступные комнаты
         List<SessionRoom> availableRooms = sessionRoomRepository.findAllAvailableForJoin(SessionRoomStatus.WAITING_SECOND_USER);
-        log.info("Available rooms for user {}: {}", userId, availableRooms);
+        log.info("Available rooms for user {}: {}", userId, availableRooms.stream().map(s -> s.getId()).toList());
 
         return availableRooms;
     }
@@ -157,6 +160,12 @@ public class SessionRoomService {
             throw new PlayerNotRelatedToSessionException(roomId, userId);
         }
 
+        if (sessionRoom.getStatus().equals(SessionRoomStatus.FINISHED)) {
+            log.info("Комната [{}] уже завершена.", roomId);
+            return;
+        }
+
+
         // Если выходит первый игрок
         if (sessionRoom.getPlayerFirst().getId().equals(userId)) {
             if (sessionRoom.getPlayerSecond() != null) {
@@ -164,7 +173,7 @@ public class SessionRoomService {
                 User newFirst = sessionRoom.getPlayerSecond();
                 sessionRoom.setPlayerFirst(newFirst);
                 sessionRoom.setPlayerSecond(null);
-                sessionRoom.setStatus(SessionRoomStatus.WAITING_SECOND_USER);
+                updateSessionStatus(sessionRoom, SessionRoomStatus.WAITING_SECOND_USER);
                 sessionRoomRepository.saveAndFlush(sessionRoom);
 
                 Long winnerId = newFirst.getId(); // считаем вторым победителем
@@ -183,7 +192,7 @@ public class SessionRoomService {
             Long winnerId = sessionRoom.getPlayerFirst() != null ? sessionRoom.getPlayerFirst().getId() : null;
 
             sessionRoom.setPlayerSecond(null);
-            sessionRoom.setStatus(SessionRoomStatus.WAITING_SECOND_USER);
+            updateSessionStatus(sessionRoom, SessionRoomStatus.WAITING_SECOND_USER);
             sessionRoomRepository.saveAndFlush(sessionRoom);
 
             if (winnerId != null) {
@@ -251,18 +260,26 @@ public class SessionRoomService {
     @Transactional
     public void handlePlayerSocketDisconnect(Long sessionId, Long playerId) {
         SessionRoom sessionRoom = switchPlayerSocketConnected(sessionId, playerId, false);
+        log.info("Session [{}]: playerFirstConnected={}, playerSecondConnected={}, currentStatus={}",
+                sessionId, sessionRoom.isPlayerFirstConnected(), sessionRoom.isPlayerSecondConnected(), sessionRoom.getStatus());
+
+
 
         if(!sessionRoom.isPlayerFirstConnected() && !sessionRoom.isPlayerSecondConnected()) {
-            updateSessionStatus(sessionRoom, SessionRoomStatus.FINISHED);
-            sessionRoomRepository.saveAndFlush(sessionRoom);
-            eventPublisher.publishEvent(new SessionFinishedEvent(sessionId));
+            if (sessionRoom.getStatus() != SessionRoomStatus.FINISHED) {
+                updateSessionStatus(sessionRoom, SessionRoomStatus.FINISHED);
+                sessionRoomRepository.saveAndFlush(sessionRoom);
+                eventPublisher.publishEvent(new SessionFinishedEvent(sessionId));
+            }
             return;
         }
-
-        updateSessionStatus(sessionRoom, SessionRoomStatus.PLAYER_DISCONNECTED);
-        sessionRoomRepository.saveAndFlush(sessionRoom);
-        eventPublisher.publishEvent(new PlayerDisconnectedSessionEvent(sessionId, playerId, sessionRoom));
+        if (sessionRoom.getStatus() != SessionRoomStatus.FINISHED && sessionRoom.getStatus() != SessionRoomStatus.PLAYER_DISCONNECTED) {
+            updateSessionStatus(sessionRoom, SessionRoomStatus.PLAYER_DISCONNECTED);
+            sessionRoomRepository.saveAndFlush(sessionRoom);
+            eventPublisher.publishEvent(new PlayerDisconnectedSessionEvent(sessionId, playerId, sessionRoom));
+        }
     }
+
 
     @EventListener(SessionStartedEvent.class)
     void onSessionStarted(SessionStartedEvent event) {
@@ -306,11 +323,11 @@ public class SessionRoomService {
         throw new PlayerNotRelatedToSessionException(sessionId, playerId);
     }
 
+    // Обновлённая проверка незавершённых сессий перед join
     private void throwIfUserHaveUnfinishedSessions(Long userId) {
-        List<SessionRoom> activeSessions = sessionRoomRepository.findByPlayerFirstIdOrPlayerSecondIdAndStatusNot(
-                userId, userId, SessionRoomStatus.FINISHED
-        );
+        List<SessionRoom> activeSessions = getUserActiveSessions(userId);
         if (!activeSessions.isEmpty()) {
+            log.warn("User [{}] has unfinished sessions: {}", userId, activeSessions.stream().map(s -> s.getId()).toList());
             throw new UserHaveUnfinishedSessionException(userId);
         }
     }
@@ -326,8 +343,14 @@ public class SessionRoomService {
         return secondPlayer.getId().equals(userId);
     }
 
-    private void updateSessionStatus(SessionRoom sessionRoom, SessionRoomStatus status) {
-        sessionRoom.setStatus(status);
-        log.debug("Session [{}]: updated status to {}", sessionRoom.getId(), sessionRoom.getStatus());
+    private void updateSessionStatus(SessionRoom sessionRoom, SessionRoomStatus newStatus) {
+        if (sessionRoom.getStatus() == SessionRoomStatus.FINISHED && newStatus != SessionRoomStatus.FINISHED) {
+            log.warn("Попытка сменить статус завершённой комнаты [{}] на {}", sessionRoom.getId(), newStatus);
+            return;
+        }
+
+        SessionRoomStatus oldStatus = sessionRoom.getStatus();
+        sessionRoom.setStatus(newStatus);
+        log.info("Session [{}]: статус изменён с {} на {}", sessionRoom.getId(), oldStatus, newStatus);
     }
 }
