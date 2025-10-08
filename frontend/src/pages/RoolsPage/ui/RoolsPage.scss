@@ -1,0 +1,31 @@
+.swiper {
+  width: 80vw;
+  max-width: 1000px;
+  height: 80vh;
+  max-height: 700px;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.swiper-slide {
+  display: flex;
+  flex-direction: column;
+  gap: 50px;
+  justify-content: center;
+  border-radius: 18px;
+  font-size: 22px;
+  font-weight: bold;
+  color: #fff;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  background: #fff1;
+  padding: 40px 40px 60px 40px;
+}
+
+.swiper-pagination {
+  top: auto !important;
+  bottom: 20px !important;
+  z-index: 1;
+}

@@ -1,0 +1,77 @@
+.modal {
+  min-width: 360px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: black;
+  background-color: #fff;
+  padding: 40px;
+  border-radius: var(--radius-l);
+  font: var(--font-s);
+
+  p {
+    margin: 20px 0;
+    position: relative;
+    text-align: center;
+    width: 100%;
+
+    &::after,
+    &::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 0;
+      width: 40%;
+      border-top: 1px solid black;
+    }
+
+    &::after {
+      left: auto;
+      right: 0;
+    }
+  }
+}
+
+.goToGame {
+  position: absolute;
+  top: 0;
+  right: 0;
+  margin-left: -20px;
+  padding: 9px 20px;
+  background-color: var(--main-color);
+  border-radius: 0 var(--radius-l) var(--radius-l) 0;
+  white-space: nowrap;
+  transition: all .2s ease-in-out;
+
+  &:hover {
+    color: white !important;
+    background-color: #248;
+  }
+}
+
+.inputWrapper {
+  position: relative;
+}
+
+.input {
+  outline: none;
+  width: 100%;
+  color: black;
+  background: none;
+  padding: 8px 16px;
+  border: 1px solid #888;
+  border-radius: var(--radius-l);
+
+  &::placeholder {
+    color: #888;
+  }
+}
+
+.error {
+  color: red;
+  position: absolute;
+  bottom: -8px;
+  left: 10px;
+  font: var(--font-xs);
+  background-color: white;
+}

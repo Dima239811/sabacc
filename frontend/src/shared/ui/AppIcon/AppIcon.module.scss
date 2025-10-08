@@ -1,0 +1,20 @@
+.AppIcon {
+  color: var(--icon-color);
+}
+
+.button {
+  margin: 0;
+  padding: 0;
+  border: none;
+  outline: none;
+  background: none;
+  cursor: pointer;
+
+  .AppIcon {
+    transition: color .2s ease-in-out;
+  }
+}
+
+.button:hover .AppIcon, a:hover .AppIcon {
+  color: var(--accent-icon-color);
+}
