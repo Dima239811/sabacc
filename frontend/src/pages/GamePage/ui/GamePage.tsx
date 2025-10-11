@@ -34,19 +34,19 @@ const GamePage = () => {
 
   return (
     <div className={classNames(cls.game, {}, [])}>
-      {loader ||
+      {loader || (client && gameState && roomState && (
         <Game
           client={client}
           gameState={gameState}
           roomState={roomState}
           diceDetails={diceDetails}
           handleDiceSelection={handleDiceSelection}
-          winnerId={winnerId}
+          winnerId={winnerId ?? null}
           roundResult={roundResult}
           leaveCurrentRoom={leaveCurrentRoom}
           fetchGameState={fetchGameState}
         />
-      }
+      ))}
     </div>
   );
 };

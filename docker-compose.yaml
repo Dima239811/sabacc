@@ -1,113 +1,69 @@
 version: "3.4"
 
-x-project-name:
-  &project-name sabacc
-
-x-host:
-  &host 103.90.75.122:88
-x-protocol:
-  &protocol http
-
-x-db-host:
-  &db-host postgres
-x-db-username:
-  &db-username postgres
-x-db-password:
-  &db-password postgres
-
-x-profiles:
-#  &profiles prod
-  &profiles dev  # ← Изменили на dev для разработки
+x-project-name: &project-name ${POSTGRES_DB}
+x-host: &host ${PUBLIC_IP}:8080
+x-protocol: &protocol http
+x-db-host: &db-host postgres
+x-db-username: &db-username ${POSTGRES_USER}
+x-db-password: &db-password ${POSTGRES_PASSWORD}
+x-profiles: &profiles prod
 
 services:
-  prometheus:
-    image: prom/prometheus:latest
-    container_name: prometheus
-    volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
-    ports:
-      - "9090:9090"
 
-  grafana:
-    image: grafana/grafana:latest
-    container_name: grafana
+  postgres:
+    image: postgres:14.8-alpine3.18
+    container_name: sabacc_postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     ports:
-      - "3000:3000"
-      - "35729:35729"
+      - "5432:5432"
     volumes:
-      - ./grafana-data:/var/lib/grafana
+      - ./postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: always
 
   backend:
-    image: ghcr.io/ap1kkk/sabacc/backend:latest
     build:
       context: backend
-#      dockerfile: Dockerfile
-      dockerfile: Dockerfile.dev  # ← Используем dev Dockerfile
+      dockerfile: Dockerfile
     container_name: sabacc_backend
     ports:
       - "8080:8080"
     depends_on:
       - postgres
-
-
     environment:
       SERVER_HOST: *host
       SERVER_PROTOCOL: *protocol
-
       SPRING_PROFILES_ACTIVE: *profiles
-
-      #     Database
       SPRING_DATASOURCE_USERNAME: *db-username
       SPRING_DATASOURCE_PASSWORD: *db-password
       SPRING_DATASOURCE_DATABASE_HOST: *db-host
       SPRING_DATASOURCE_DATABASE_PORT: 5432
       SPRING_DATASOURCE_DATABASE_NAME: *project-name
-      SPRING_DEVTOOLS_RESTART_ENABLED: "true"  # ← Включаем DevTools
+      SPRING_DEVTOOLS_RESTART_ENABLED: "true"
       GRADLE_OPTS: "-DskipTests"
       SPRING_DOCKER_COMPOSE_ENABLED: "false"
-
     volumes:
       - ./backend/src:/app/src
       - ./backend/build.gradle:/app/build.gradle
       - ./backend/settings.gradle:/app/settings.gradle
       - ./backend/gradle:/app/gradle
 
-  postgres:
-    restart: always
-    image: postgres:14.8-alpine3.18
-    container_name: sabacc_postgres
-    environment:
-      POSTGRES_PASSWORD: *db-password
-      POSTGRES_USER: *db-username
-      POSTGRES_DB: *project-name
-    ports:
-      - "5432:5432"
-
-    volumes:
-      - ./postgres-data:/var/lib/postgresql/data
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U $${POSTGRES_USER}" ]
-      interval: 5s
-      timeout: 5s
-      retries: 10
-
   frontend:
-    image: ghcr.io/ap1kkk/sabacc/frontend:latest
     build:
       context: frontend
-      dockerfile: Dockerfile.dev  # ← Используем dev Dockerfile
-#      dockerfile: Dockerfile
-
+      dockerfile: Dockerfile
     container_name: sabacc_frontend
     ports:
-      - "5173:5173"
-    volumes:
-      - ./nginx:/etc/nginx/conf.d
-      - ./frontend:/app  # ← Hot reload для фронтенда
-      - /app/node_modules  # ← Исключаем node_modules из volume
-
-    command: npm run dev -- --host 0.0.0.0
-
+      - "3000:80"
+    depends_on:
+      - backend
     environment:
-      - CHOKIDAR_USEPOLLING=true  # ← Важно для Docker
-      - VITE_API_URL=http://localhost:8080
+      - VITE_API_URL=${VITE_API_URL}
+

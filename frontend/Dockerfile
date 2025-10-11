@@ -1,19 +1,13 @@
-FROM node:lts-alpine3.20 as build
-
-WORKDIR /app/src
+# 1️⃣ Сборка фронта
+FROM node:lts-alpine3.20 AS build
+WORKDIR /app
 COPY package*.json ./
 RUN npm ci
-COPY . ./
+COPY . .
 RUN npm run build
 
-FROM node:lts-alpine3.20
-
-WORKDIR /app
-RUN ls
-COPY --from=build /app/src/dist ./
-CMD node server/server.mjs
-
+# 2️⃣ Запуск через nginx
 FROM nginx:stable-alpine3.19
-
-COPY --from=build /app/src/dist /usr/share/nginx/html
-LABEL org.opencontainers.image.source=https://github.com/Ap1kkk/Sabacc
+COPY --from=build /app/dist /usr/share/nginx/html
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]

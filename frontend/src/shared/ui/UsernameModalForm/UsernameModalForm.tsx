@@ -2,7 +2,7 @@ import { ChangeEvent, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getRouteGame } from "@/shared/const/router";
 import { Button, HStack } from "@/shared/ui";
-import { useCreateAnonymousUserMutation } from "../model/services/authService";
+import { useCreateAnonymousUserMutation } from '../../../features/Auth/model/services/authService';
 import { Modal } from "@/shared/ui/Modal/Modal";
 import cls from "./Auth.module.scss";
 

@@ -1,5 +1,5 @@
 server:
-  host: "103.90.75.122:88"
+  host: "95.79.216.156"
   protocol: "http"
 
 security:

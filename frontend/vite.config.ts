@@ -9,7 +9,7 @@ interface BuildOptions {
 export default ({ mode }: BuildOptions) => {
   const isDev = mode === 'development';
   const port = process.env.VITE_PORT || 5173;
-  const apiUrl = isDev ? (process.env.VITE_API_URL || '/api'): 'http://103.90.75.122:88';
+  const apiUrl = isDev ? (process.env.VITE_API_URL || '/api'): 'http://95.79.216.156';
   console.log(`API URL: ${apiUrl}`)
 
 

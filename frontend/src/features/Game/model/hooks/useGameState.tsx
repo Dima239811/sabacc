@@ -8,7 +8,8 @@ import { GameState, GameStatus, TurnType } from '../types/game';
 
 export const useGameState = () => {
   const playerId = useSelector(selectCurrentUser)?.id;
-  const sessionId = useSetupRoom(playerId);
+  //const sessionId = useSetupRoom(playerId);
+  const sessionId = playerId !== undefined ? useSetupRoom(playerId) : undefined;
   const client = useWebSocketGame(playerId, sessionId || undefined);
 
   const [roomState, setRoomState] = useState<any>();
@@ -57,7 +58,7 @@ export const useGameState = () => {
       await axios.post(`${__API__}/v1/room/leave/${sessionId}?userId=${playerId}`);
       localStorage.removeItem('roomId');
       console.log("ПОКИДАЕМ ИГРУ В LEAVECURRENTROOM() useGameState")
-      console.log("player with " + this.playerId + " leave room " + sessionId);
+      console.log("player with " + playerId + " leave room " + sessionId);
       setGameState(null);
       setRoomState(null);
     } catch (err) {
