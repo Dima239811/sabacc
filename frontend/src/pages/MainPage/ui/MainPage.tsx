@@ -7,13 +7,12 @@ export const MainPage = memo(() => {
   return (
     <>
       <div className={cls.menu}>
-        <h1 className={cls.title}>SAB</h1>
+        <h1 className={cls.title}>САБАКК</h1>
         <MainMenu />
         {/* Ссылка на страницу с комнатами */}
         <Link to="/rooms" className={cls.link}>
           Доступные комнаты
         </Link>
-        <h1 className={cls.title}>ACC</h1>
       </div>
     </>
   );

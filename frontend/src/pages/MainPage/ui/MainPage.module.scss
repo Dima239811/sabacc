@@ -9,8 +9,24 @@
 }
 
 .title {
-  font-size: 120px;
-  line-height: 110px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-weight: 500;
+  font-size: 128px;
+  line-height: 96%;
+  letter-spacing: 35px;
+  color: #FFFFFF;
+
+  filter: drop-shadow(0 0 19.7px rgba(255, 255, 255, 0.5));
+
+  width: 651px;
+  height: 219px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+
+  white-space: nowrap;
 }
 
 .link {

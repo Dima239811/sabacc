@@ -36,17 +36,27 @@
 }
 
 .btn {
-  padding: 12px;
-  background-color: #fff2;
-  border: 0.5px solid #fff;
-  color: #fff;
-  border-radius: var(--radius-circle);
-  width: 100%;
+  width: 399px;
+  height: 91px;
+  padding: 0;
+  background: linear-gradient(90deg, #004BFB, #00B7FF, #04002F);
+  border: 1px solid rgba(255, 255, 255, 0.94);
+  border-radius: 35px;
+  color: #FFFFFF;
+  font-family: 'IBM Plex Mono', monospace;
+  font-weight: 600;
+  font-size: 40px;
+  line-height: 100%;
   text-align: center;
+  backdrop-filter: blur(10px);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: all .2s ease-in-out;
-  
+
   &:hover {
-    border-color: #fff0;
+    opacity: 0.9;
   }
 }
 
