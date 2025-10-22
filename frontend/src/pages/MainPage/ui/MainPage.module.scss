@@ -6,6 +6,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: 42px;
 }
 
 .title {
@@ -27,20 +28,31 @@
   text-align: center;
 
   white-space: nowrap;
+
 }
 
 .link {
-  display: inline-block;
-  margin: 16px 0;
-  padding: 8px 24px;
-  background: #eee;
-  color: #333;
-  border-radius: 8px;
+  width: 624px;
+  height: 70px;
+  padding: 0;
+  background: linear-gradient(90deg, #00206C, #00B1FF, #00B7FF, #033970, #04002F);
+  border: 1px solid #FFFFFF;
+  border-radius: 35px;
+  margin-bottom: 42px;
+  color: #FFFFFF;
+  font-family: 'IBM Plex Mono', monospace;
+  font-weight: 600;
+  font-size: 36px;
+  line-height: 100%;
+  text-align: center;
+  backdrop-filter: blur(10px);
   text-decoration: none;
-  font-weight: bold;
-  transition: background 0.2s;
-}
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease-in-out;
 
-.link:hover {
-  background: #ccc;
+  &:hover {
+    opacity: 0.9;
+  }
 }

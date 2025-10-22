@@ -11,7 +11,7 @@ export const MainPage = memo(() => {
         <MainMenu />
         {/* Ссылка на страницу с комнатами */}
         <Link to="/rooms" className={cls.link}>
-          Доступные комнаты
+          Комнаты
         </Link>
       </div>
     </>

@@ -34,7 +34,7 @@ export const MainMenu = memo((props: MainMenuProps) => {
 
   return (
     <div className={classNames(cls.Menu, {}, [className])}>
-      <Button variant="btn" className={cls.mainLink} onClick={handleOpen}>
+      <Button variant="btn"  onClick={handleOpen}>
         Играть {user && 'как ' + user.username}
       </Button>
 

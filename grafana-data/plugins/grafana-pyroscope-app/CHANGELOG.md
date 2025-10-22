@@ -288,7 +288,7 @@
 * **FunctionDetails:** Correctly render blank lines ([ec3ed5c](https://github.com/grafana/explore-profiles/commit/ec3ed5c915d317c9ae6c15c4f1c00dc12cfaac39))
 * **GitHubIntegration:** Fix "Learn more" href ([#245](https://github.com/grafana/explore-profiles/issues/245)) ([1848159](https://github.com/grafana/explore-profiles/commit/184815953a3fb5c20b6586df59b89b5b948695b6))
 * **LabelValuesGrid:** decrease column size to accommodate small screen resolutions ([#235](https://github.com/grafana/explore-profiles/issues/235)) ([f62b17a](https://github.com/grafana/explore-profiles/commit/f62b17a32f91fe97cc133f93204ae365837fb1e3))
-* **OnboardingModal:** Change Grafana Agent to Grafana Alloy ([#256](https://github.com/grafana/explore-profiles/issues/256)) ([27453ed](https://github.com/grafana/explore-profiles/commit/27453edef4051ea2ae4399b9502f1ed2aa18081c))
+* **OnboardingModal:** Change Grafana Agent to Grafana Alloy ([#256](https://github.com/grafana/explore-profiles/issues/256)) ([27453ed](https://github.com/grafana/explore-profiles/commit/27453edef4051ea2ae4399b9502f1ed2aa18080c))
 * **SettingsView:** Fix back button after modifying the max nodes setting ([#234](https://github.com/grafana/explore-profiles/issues/234)) ([673b44c](https://github.com/grafana/explore-profiles/commit/673b44cffe5e00378780da40d4d8c94d8289e171))
 * **ShareableUrl:** Fix when the default time range is selected ([#244](https://github.com/grafana/explore-profiles/issues/244)) ([ae6ddeb](https://github.com/grafana/explore-profiles/commit/ae6ddeb842066fb8513a1ebd4c50133bf8a41b69))
 * Small UI fixes ([#248](https://github.com/grafana/explore-profiles/issues/248)) ([ee881fa](https://github.com/grafana/explore-profiles/commit/ee881fa06929fa317299a0e24b6eca4e228cb571))
