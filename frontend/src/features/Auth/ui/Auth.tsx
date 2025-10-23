@@ -51,18 +51,20 @@ export const Auth = memo(() => {
 
   return (
     <div className={cls.modal}>
+      {/* Добавляем заголовок */}
+      <h3 className={cls.title}>Введите имя</h3>
       {/* Форма ввода только если isInputOpen */}
       {isInputOpen && (
         <HStack className={cls.inputWrapper} max>
           <input
             className={cls.input}
-            placeholder='Введите имя'
+
             onChange={handleInputChange}
             ref={inputNameRef}
           />
 
           {isValidName && (
-            <Button className={cls.goToGame} onClick={handleToGame}>В игру</Button>
+            <Button className={cls.goToGame} onClick={handleToGame}>ДАЛЕЕ</Button>
           )}
 
           {!isValidName && isStartingType && (

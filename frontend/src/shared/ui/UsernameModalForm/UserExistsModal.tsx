@@ -12,7 +12,7 @@
       <Modal isOpen={isOpen} onClose={onClose} className={cls.UserExistsModal}>
         <h2>Ошибка</h2>
         <p>Пользователь с таким именем уже существует</p>
-        <Button onClick={onClose}>Закрыть</Button>
+        <Button onClick={onClose}>Вернуться</Button>
       </Modal>
     );
 

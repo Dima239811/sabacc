@@ -1,77 +1,91 @@
+:root {
+  --radius-l: 25px;
+  --font-s: 16px/1.5 Arial, sans-serif;
+  --font-xs: 12px/1.5 Arial, sans-serif;
+  --main-color: #0A193A;
+}
+
 .modal {
-  min-width: 360px;
+  min-width: 650px;
+  height: 400px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  color: black;
-  background-color: #fff;
-  padding: 40px;
+  color: #FFFFFF;
+  background-color: #0A193A;
+  padding: 40px 30px 20px 30px;
   border-radius: var(--radius-l);
   font: var(--font-s);
-
-  p {
-    margin: 20px 0;
-    position: relative;
-    text-align: center;
-    width: 100%;
-
-    &::after,
-    &::before {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 0;
-      width: 40%;
-      border-top: 1px solid black;
-    }
-
-    &::after {
-      left: auto;
-      right: 0;
-    }
-  }
+  border: 2px solid #FFFFFF;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.7);
+  gap: 40px;
+  margin-top: 40px;
 }
 
-.goToGame {
-  position: absolute;
-  top: 0;
-  right: 0;
-  margin-left: -20px;
-  padding: 9px 20px;
-  background-color: var(--main-color);
-  border-radius: 0 var(--radius-l) var(--radius-l) 0;
-  white-space: nowrap;
-  transition: all .2s ease-in-out;
-
-  &:hover {
-    color: white !important;
-    background-color: #248;
-  }
+.title {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 28px;
+  color: #FFFFFF;
+  margin-bottom: 10px;
 }
 
 .inputWrapper {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 50px;
+  width: 100%;
 }
 
 .input {
   outline: none;
-  width: 100%;
-  color: black;
-  background: none;
-  padding: 8px 16px;
-  border: 1px solid #888;
-  border-radius: var(--radius-l);
+  width: 75%;
+  height: 80px;
+  color: #FFFFFF;
+  background-color: #0A193A;
+  padding: 10px 15px;
+  border: 1px solid #FFFFFF;
+  border-radius: 40px;
+  font-size: 30px;
+  text-align: center;
 
   &::placeholder {
-    color: #888;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 20px;
+  }
+}
+
+.goToGame {
+  width: 70%;
+  height: 70px;
+  background: linear-gradient(to right, #6073A0, #0A193A);
+  border: 2px solid #FFFFFF;
+  border-radius: 35px;
+  color: #FFFFFF;
+  font-size: 22px;
+  font-weight: bold;
+  text-transform: uppercase;
+  padding: 12px 25px;
+  cursor: pointer;
+  transition: background 0.3s ease, box-shadow 0.3s ease;
+  outline: none;
+
+  &:hover {
+    background: linear-gradient(to right, #0A193A, #6073A0);
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
   }
 }
 
 .error {
-  color: red;
+  color: #FF6B6B;
   position: absolute;
-  bottom: -8px;
-  left: 10px;
-  font: var(--font-xs);
-  background-color: white;
+  bottom: -60px;
+  left: 0;
+  font-size: 20px;
+  font-weight: 500;
+  background-color: transparent;
+  text-align: center;
+  width: 100%;
+  padding: 6px 0;
 }
