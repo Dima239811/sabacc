@@ -2,6 +2,7 @@ import { classNames } from '@/shared/lib/classNames/classNames';
 import cls from './GamePage.module.scss';
 import { Game } from '@/features/Game';
 import { useGameState } from '@/features/Game/model/hooks/useGameState';
+import { useEffect } from 'react';
 
 const GamePage = () => {
   const {
@@ -15,10 +16,17 @@ const GamePage = () => {
     winnerId,
     roundResult,
     leaveCurrentRoom,
-    fetchGameState
+    fetchGameState,
   } = useGameState();
 
   let loader = null;
+  let roomId = null; // Инициализируем roomId
+
+  useEffect(() => {
+    if (roomState && roomState.id) {
+      roomId = roomState.id; // Получаем ID комнаты из roomState
+    }
+  }, [roomState]);
 
   if (!client) {
     loader = <div className={classNames(cls.loader, {}, [])}>Подключение к серверу</div>;
@@ -28,13 +36,22 @@ const GamePage = () => {
     loader = <div className={classNames(cls.loader, {}, [])}>Ожидание соперника...</div>;
   } else if (!gameState) {
     loader = <div className={classNames(cls.loader, {}, [])}>Игра ещё не создана или не стартовала</div>;
-  } else if (isLoading || !isGameInProgress) {
+  } else if (isLoading && !isGameInProgress) {
     loader = <div className={classNames(cls.loader, {}, [])}>Ожидание соперника...</div>;
   }
 
   return (
     <div className={classNames(cls.game, {}, [])}>
-      {loader ||
+      {/* Отображаем ID комнаты, если он есть */}
+      {roomState?.id && (
+        <div className={cls.roomId}>
+          ID Комнаты: {roomState.id}
+        </div>
+      )}
+
+      {loader ? (
+        loader
+      ) : (
         <Game
           client={client}
           gameState={gameState}
@@ -46,9 +63,10 @@ const GamePage = () => {
           leaveCurrentRoom={leaveCurrentRoom}
           fetchGameState={fetchGameState}
         />
-      }
+      )}
     </div>
   );
 };
 
 export default GamePage;
+

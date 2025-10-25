@@ -2,12 +2,15 @@
 
 .rooms-container {
   padding: 32px;
-  background: #1e1e2f;
+  /*  background: #1e1e2f; */
+  background: rgba(30, 30, 47, 0.8); /* Полупрозрачный фон */
+  border: 1px solid rgba(255, 255, 255, 0.1); /*  Тонкая белая граница */
   color: #fff;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6); /*  Более выраженная тень */
   position: relative;
+  backdrop-filter: blur(10px); /*  Размытие фона */
 }
 
 .rooms-container h2 {
@@ -26,43 +29,51 @@
 
 .rooms-table th,
 .rooms-table td {
-  border: 1px solid #555;
+  /* border: 1px solid #555; */
   padding: 12px 16px;
   text-align: center;
   transition: background 0.3s;
+  border: none; /* Убираем границы ячеек */
 }
 
 .rooms-table th {
-  background: #333366;
+  /* background: #333366; */
+  background: linear-gradient(to bottom, #333366, #2a2a3d); /*  Градиент для заголовков */
   color: #fff;
   font-weight: 600;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
 }
 
 .rooms-table tbody tr {
-  background: #2a2a3d;
+  background: rgba(42, 42, 61, 0.7); /* Полупрозрачный фон для строк */
 }
 
 .rooms-table tbody tr:nth-child(even) {
-  background: #242438;
+  background: rgba(36, 36, 56, 0.7); /* Полупрозрачный фон для четных строк */
 }
 
 .rooms-table tbody tr:hover {
-  background: #444466;
+  background: rgba(68, 68, 102, 0.8); /*  Подсветка при наведении */
 }
 
 .join-button {
-  padding: 6px 14px;
-  background: #5c67f2;
+  padding: 8px 16px; /* Немного больше отступы */
+  /* background: #5c67f2; */
+  background: linear-gradient(135deg, #4CAF50, #388E3C); /* Зеленый градиент */
   color: #fff;
   border: none;
-  border-radius: 6px;
+  border-radius: 10px; /* Больше скругление */
   cursor: pointer;
   transition: background 0.3s, transform 0.2s;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3); /* Тень для кнопки */
+  font-weight: bold;
+  text-transform: uppercase; /*  Заглавные буквы */
 }
 
 .join-button:hover {
-  background: #424df0;
-  transform: translateY(-2px);
+  background: linear-gradient(135deg, #388E3C, #4CAF50); /* Инвертированный градиент */
+  transform: translateY(-2px); /* Небольшой сдвиг вверх при наведении */
 }
 
 .loading,
@@ -75,4 +86,95 @@
 
 .error {
   color: #ff5555;
+}
+
+/* Стили для контейнера фильтра */
+.status-filter {
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start; /* Выравнивание по левому краю */
+}
+
+.status-filter label {
+  margin-right: 10px;
+  font-size: 16px;
+  color: #ddd;
+}
+
+.status-filter select {
+  padding: 8px 12px;
+  font-size: 16px;
+  border-radius: 8px;
+  border: 1px solid #777;
+  background-color: #333;
+  color: #fff;
+  cursor: pointer;
+  appearance: none; /* Убираем стандартные стили select */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23fff'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E"); /*  Стрелка вниз */
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 20px;
+  padding-right: 30px; /* Добавляем отступ для стрелки */
+}
+
+.status-filter select:focus {
+  outline: none;
+  border-color: #5c67f2;
+  box-shadow: 0 0 5px rgba(92, 103, 242, 0.5);
+}
+
+.rooms-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.search-bar {
+  display: flex;
+  align-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.1); /* Белая рамка */
+  border-radius: 30px; /* Сильное скругление */
+  overflow: hidden; /* Скрываем выходящие элементы */
+  background-color: rgba(255, 255, 255, 0.1); /* Полупрозрачный белый фон */
+  width: 200px; /* Задайте нужную ширину поля */
+}
+
+.search-bar input[type="text"] {
+  flex: 1; /* Растягиваем на всю доступную ширину */
+  padding: 10px 16px;
+  border: none;
+  background: none; /* Прозрачный фон */
+  color: #fff;
+  font-size: 16px;
+  outline: none; /* Убираем обводку при фокусе */
+  width: 100%;
+}
+
+/* Скрываем кнопку поиска */
+.search-bar button {
+  display: none;
+}
+/* Стили для кнопки "Вернуться" */
+.back-button {
+  padding: 10px 20px;
+  background-color: rgba(255, 255, 255, 0.1); /*  Полупрозрачный белый фон */
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.3); /* Тонкая белая рамка */
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s, color 0.3s;
+  margin-top: 20px; /* Добавляем отступ сверху */
+}
+
+.back-button:hover {
+  background-color: rgba(255, 255, 255, 0.3); /*  Более яркий фон при наведении */
+  color: #fff;
+}
+
+.back-button:focus {
+  outline: none; /* Убираем обводку при фокусе */
+  box-shadow: 0 0 5px rgba(255, 255, 255, 0.5); /*  Подсветка при фокусе */
 }

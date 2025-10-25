@@ -21,6 +21,8 @@ const AvailableRoomsPage: React.FC = () => {
   const navigate = useNavigate();
   const currentUser = useSelector(selectCurrentUser);
   const [showAuth, setShowAuth] = useState(false);
+  const [searchQuery, setSearchQuery] = useState(''); //  Поиска
+  const [statusFilter, setStatusFilter] = useState('');//  Фильтра
 
   enum RoomStatus {
     WAITING_SECOND_USER = 'WAITING_SECOND_USER',
@@ -57,50 +59,116 @@ const AvailableRoomsPage: React.FC = () => {
     navigate(`/in-game?roomId=${roomId}`);
   };
 
+  const handleBack = () => {
+    navigate(-1);
+  };
+
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(event.target.value);
+  };
+
+  const handleStatusFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setStatusFilter(event.target.value);
+  };
+
+
+   const filteredRooms = rooms.filter(room =>
+    room.id.toString().includes(searchQuery) && // Поиск по ID комнаты
+    (statusFilter === '' || room.status === statusFilter) // Фильтр по статусу
+  );
+
   return (
-    <div className="rooms-container">
-      {showAuth && <Auth />}
-      <h2>Список комнат</h2>
+    <div className="background-container">
+      <div className="rooms-container">
+        {showAuth && <Auth />}
 
-      {loading && <div className="loading">Загрузка...</div>}
-      {error && <div className="error">{error}</div>}
-      {!loading && rooms.length === 0 && (
-        <div className="no-rooms">Нет комнат</div>
-      )}
+        <div className="rooms-header">
+        <div className="status-filter">
+              <label htmlFor="statusFilter">Статус комнаты:</label>
+              <select id="statusFilter" value={statusFilter} onChange={handleStatusFilterChange}>
+                <option value="">Все</option>
+                <option value="WAITING_SECOND_USER">Ожидание соперника</option>
+                <option value="PLAYER_DISCONNECTED">Игрок отключился</option>
+                <option value="FINISHED">Игра завершена</option>
+                <option value="ALL_USERS_JOINED">Все пользователи подключены</option>
+                {/* Добавьте другие статусы по необходимости */}
+              </select>
+            </div>
 
-      {!loading && rooms.length > 0 && (
-        <table className="rooms-table">
-          <thead>
-            <tr>
-              <th>ID комнаты</th>
-              <th>ID первого игрока</th>
-              <th>ID второго игрока</th>
-              <th>Статус</th>
-              <th>Действие</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rooms.map((room) => (
-              <tr key={room.id}>
-                <td>{room.id}</td>
-                <td>{room.playerFirstId ?? '—'}</td>
-                <td>{room.playerSecondId ?? '—'}</td>
-                <td>{room.status}</td>
-                <td>
-                  {room.status === RoomStatus.WAITING_SECOND_USER && (
-                    <button
-                      className="join-button"
-                      onClick={() => handleJoinRoom(room.id)}
-                    >
-                      Зайти
-                    </button>
-                  )}
-                </td>
+          <div className="search-bar">
+            <input
+              type="text"
+              placeholder="Поиск"
+              value={searchQuery}
+              onChange={handleSearchChange}
+            />
+            <button>
+               {/* Тут надо добавить иконку поиска */}
+            </button>
+          </div>
+        </div>
+
+
+        {loading && <div className="loading">Загрузка...</div>}
+        {error && <div className="error">{error}</div>}
+        {!loading && rooms.length === 0 && (
+          <div className="no-rooms">Нет комнат</div>
+        )}
+
+        {!loading && filteredRooms.length > 0 && (
+          <table className="rooms-table">
+            <thead>
+              <tr>
+                <th>ID комнаты</th>
+                <th>ID соперника</th>
+                <th>Статус</th>
+                <th>Действие</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+            </thead>
+            <tbody>
+              {filteredRooms.map((room) => (
+                <tr key={room.id}>
+                  <td>{room.id}</td>
+                  <td>{room.playerSecondId ?? '—'}</td>
+                  <td>
+                  {/* Логика статуса комнаты */}
+                  {(() => {
+                    switch (room.status) {
+                      case 'WAITING_SECOND_USER':
+                        return 'ОЖИДАНИЕ СОПЕРНИКА';
+                      case 'PLAYER_DISCONNECTED':
+                        return 'ИГРОК ОТКЛЮЧИЛСЯ';
+                      case 'FINISHED':
+                        return 'ИГРА ЗАВЕРШЕНА';
+                      case 'ALL_USERS_JOINED':
+                        return 'ИДЕТ ИГРА';
+                      default:
+                        return room.status;
+                    }
+                  })()}
+                </td>
+                  <td>
+                    {room.status === RoomStatus.WAITING_SECOND_USER ? (
+                      <button
+                        className="join-button"
+                        onClick={() => handleJoinRoom(room.id)}
+                      >
+                        Зайти
+                      </button>
+                    ) : (
+                      <span>Не доступно</span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+
+        <button className="back-button" onClick={handleBack}>
+          Вернуться
+        </button>
+      </div>
     </div>
   );
 };
