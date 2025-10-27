@@ -11,19 +11,30 @@ export const Auth = memo(() => {
   const [isStartingType, setIsStartingType] = useState<boolean>(false);
   const [createAnonymousUser] = useCreateAnonymousUserMutation();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [errorText, setErrorText] = useState<string>('');
   const [isInputOpen, setIsInputOpen] = useState(true); // добавляем состояние для видимости формы
 
   const navigate = useNavigate();
   const inputNameRef = useRef<HTMLInputElement | null>(null);
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setIsStartingType(true);
-    if (e.target.value.length >= 4) {
-      setIsValidName(true);
-    } else {
-      setIsValidName(false);
-    }
-  };
+      const value = e.target.value.trim();
+      setIsStartingType(true);
+
+      // Проверяем сначала максимальную длину
+      if (value.length > 12) {
+        e.target.value = value.slice(0, 12); // обрезаем ввод
+        setIsValidName(false);
+        setErrorText('Максимум 12 символов.');
+      } else if (value.length < 4) {
+        setIsValidName(false);
+        setErrorText('Минимум 4 символа.');
+      } else {
+        setIsValidName(true);
+        setErrorText('');
+      }
+    };
+
 
   const handleToGame = async () => {
     if (!inputNameRef.current?.value) return;
@@ -61,15 +72,17 @@ export const Auth = memo(() => {
 
             onChange={handleInputChange}
             ref={inputNameRef}
+            placeholder="Введите имя (4–12 символов)"
+
           />
 
           {isValidName && (
             <Button className={cls.goToGame} onClick={handleToGame}>ДАЛЕЕ</Button>
           )}
 
-          {!isValidName && isStartingType && (
-            <span className={cls.error}>Минимум 4 символа.</span>
-          )}
+          {!isValidName && isStartingType && errorText && (
+                      <span className={cls.error}>{errorText}</span>
+                    )}
         </HStack>
       )}
 
