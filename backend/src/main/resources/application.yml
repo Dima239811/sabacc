@@ -8,7 +8,7 @@ logging:
   level:
     root: INFO
     ru.ngtu: DEBUG
-# ru.ngtu maybe switch on INFO, DEBUG is dangerous
+
 spring:
   application:
     name: sabacc
@@ -19,7 +19,7 @@ spring:
 #    url: jdbc:postgresql://db:5432/sabacc
     url: jdbc:postgresql://localhost:5432/sabacc
 #    url: jdbc:postgresql://${SPRING_DATASOURCE_DATABASE_HOST:localhost}:5432/${SPRING_DATASOURCE_DATABASE_NAME:sabacc}
-    password: qwerty123
+    password: Dima228*
     username: postgres
 #    database:
 #      host: postgres
@@ -60,9 +60,7 @@ spring:
     cache: false
 
 user:
-  session.expiration-in-hours: 24
-#  it can be the problem on degree about clean users after 24 hours, just look at that and test
-
+  expiration-in-hours: 24
 
 #security:
 #  cors:
@@ -95,7 +93,7 @@ websocket:
     user-destination-prefixes: "/user"
 
 cron:
-  user-cleanup: "0 0 31 2 *"
+  user-cleanup: "0 */30 * * * *"
 
 management:
   endpoints:
