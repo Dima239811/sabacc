@@ -34,7 +34,8 @@ services:
       SPRING_DATASOURCE_DATABASE_HOST: postgres
       SPRING_DATASOURCE_DATABASE_PORT: 5432
       SPRING_DATASOURCE_DATABASE_NAME: ${POSTGRES_DB:-sabacc}
-      # Не указывайте публичный IP в SERVER_HOST — backend должен слушать 0.0.0.0 в контейнере:
+      CRON_USER_CLEANUP: ${CRON_USER_CLEANUP}
+      PUBLIC_IP: ${PUBLIC_IP}
       SERVER_HOST: 0.0.0.0
       SERVER_PROTOCOL: http
     volumes:
@@ -47,26 +48,29 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      # Если хотите, чтобы сборка фронтенда получила VITE_API_URL из .env,
+      # раскомментируйте arg ниже и добавьте ARG/ENV в frontend/Dockerfile.
+      # args:
+      #   - VITE_API_URL=${VITE_API_URL}
     container_name: sabacc_frontend
     expose:
       - "80"
     depends_on:
       - backend
     environment:
-      # По умолчанию делаем prod-API путь относительным /api
-      - VITE_API_URL=${VITE_API_URL:-/api}
+      # Рекомендация: использовать относительный /api в проде — проще и безопаснее
+      VITE_API_URL: ${VITE_API_URL:-/api}
 
   nginx:
     image: nginx:stable-alpine
     container_name: sabacc_nginx
     ports:
       - "80:80"
-      # для HTTPS в проде добавьте 443:443 + сертификаты
+      # если хотите внешний порт 88, замените на "88:80"
     depends_on:
       - frontend
       - backend
     volumes:
       - ./nginx/app.conf:/etc/nginx/conf.d/default.conf:ro
-      # Если вы хотите, чтобы nginx отдавал статический билд фронтенда напрямую (альтернатива),
-      # то распакуйте build в ./frontend/build и добавьте:
+      # Для отдачи готового билда напрямую (альтернатива):
       # - ./frontend/build:/usr/share/nginx/html:ro

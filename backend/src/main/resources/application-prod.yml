@@ -1,0 +1,24 @@
+server:
+  host: "95.79.225.7"
+  protocol: "http"
+
+security:
+  cors:
+    allowed-origin:
+      - http://localhost:5173
+      - ${server.protocol}://${server.host}
+
+websocket:
+  logging: true
+  stomp:
+    allowed-origin: "${server.protocol}://${server.host}"
+  game:
+    allowed-origin: "${server.protocol}://${server.host}"
+  broker:
+    destination-prefixes:
+      - "/topic"
+      - "/queue"
+      - "/input"
+  application-destination-prefixes:
+    - "/app"
+  user-destination-prefixes: "/user"
