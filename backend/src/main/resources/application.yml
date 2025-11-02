@@ -1,92 +1,35 @@
 server:
   port: 8080
-#  host: "localhost"
-  protocol: "http"
   host: 0.0.0.0
-
-logging:
-  level:
-    root: INFO
-    ru.ngtu: DEBUG
+  protocol: http
 
 spring:
   application:
     name: sabacc
-
   datasource:
     driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://${SPRING_DATASOURCE_DATABASE_HOST:postgres}:5432/${SPRING_DATASOURCE_DATABASE_NAME:sabacc}
     username: ${SPRING_DATASOURCE_USERNAME:postgres}
     password: ${SPRING_DATASOURCE_PASSWORD:postgres}
-
-
   jpa:
     open-in-view: false
     hibernate:
       ddl-auto: validate
-
   flyway:
     enabled: true
     validate-migration-naming: false
     out-of-order: true
     baseline-on-migrate: true
 
-  # DevTools для hot reload
-  devtools:
-    restart:
-      enabled: true
-      quiet-period: 1000
-      poll-interval: 2000
-    remote:
-      secret: mysecret
-    livereload:
-      enabled: true
 
-  # Отключение кэша шаблонов для разработки
-  thymeleaf:
-    cache: false
-  freemarker:
-    cache: false
-  groovy:
-    template:
-      cache: false
-  mustache:
-    cache: false
-
-user:
-  expiration-in-hours: 24
-
-
+security:
+  cors:
+    allowed-origin:
+      - http://localhost:5173
+      - http://${PUBLIC_IP}      # <- добавляем публичный IP из .env
+      - http://${PUBLIC_IP}:5173 # <- если фронт в dev на 5173
 websocket:
-  logging: true
   stomp:
-    allowed-origin: "http://95.79.216.156:5173"
-#    allowed-origin: "http://localhost:5173"  # ← Убраны переменные, т.к. могут не работать
+    allowed-origin: http://${PUBLIC_IP}
   game:
-    allowed-origin: "http://95.79.216.156:5173"
-#    allowed-origin: "http://localhost:5173"
-  broker:
-    destination-prefixes:
-      - "/topic"
-      - "/queue"
-      - "/input"
-    application-destination-prefixes:
-      - "/app"
-    user-destination-prefixes: "/user"
-
-cron:
-  user-cleanup: "0 */30 * * * *"
-
-management:
-  endpoints:
-    web:
-      exposure:
-        include: "*"
-  endpoint:
-    prometheus:
-      enabled: true
-  prometheus:
-    metrics:
-      export:
-        enabled: true
-
+    allowed-origin: http://${PUBLIC_IP}
