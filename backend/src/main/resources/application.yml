@@ -24,11 +24,7 @@ spring:
 
 security:
   cors:
-    allowed-origin:
-      - http://localhost:5173
-      - http://localhost
-      - http://${PUBLIC_IP}      # <- добавляем публичный IP из .env
-      - http://${PUBLIC_IP}:5173 # <- если фронт в dev на 5173
+    allowed-origin: ["*"]
 websocket:
   stomp:
     allowed-origin: http://${PUBLIC_IP}

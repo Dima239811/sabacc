@@ -16,7 +16,6 @@ public class SabaccApplication {
 
     public static void main(String[] args) {
         log.info("main в бэкенде запущен");
-        log.info("dima");
         SpringApplication.run(SabaccApplication.class, args);
     }
 

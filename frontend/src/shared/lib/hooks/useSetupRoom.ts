@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const API_BASE = 'http://localhost:8080/api/v1/room';
+const API_BASE = '/api/v1/room';
 const pause = (ms: number) => new Promise(res => setTimeout(res, ms));
 
 export const useSetupRoom = (playerId: number) => {
