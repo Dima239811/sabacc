@@ -50,6 +50,9 @@ class GameSession(
                 board.bloodDeck.removeLast()
             )
         }
+
+        board.sandDiscardDeck.add(board.sandDeck.removeLast())
+        board.bloodDiscardDeck.add(board.bloodDeck.removeLast())
     }
 
     private fun initGameBoard(): Board {
@@ -331,33 +334,36 @@ class GameSession(
             return
         }
 
+        var opponentPlayer: Player = Player(1) // заглушка
+        for (opponent in players.values) {
+            if (opponent != player)
+                opponentPlayer = opponent
+        }
+
         when(token) {
             Token.NO_TAX -> {
-                player.tokens.remove(Token.NO_TAX)
-
-                cardPrice = 0
-                logger.debug { "Session $sessionId: Player $playerId used $token, now the card price is $cardPrice" }
+                NoTaxTokenUse(player)
             }
             Token.TAKE_TWO_CHIPS -> {
-                player.tokens.remove(Token.TAKE_TWO_CHIPS)
-
-                val minChips = min(player.spentChips, 2)
-                player.remainChips += minChips
-                player.spentChips -= minChips
-                logger.debug { "Session $sessionId: Player $playerId used $token, $minChips returned from the bank" }
+                TakeTwoChipsTokenUse(player)
             }
             Token.OTHER_PLAYERS_PAY_ONE -> {
-                player.tokens.remove(Token.OTHER_PLAYERS_PAY_ONE)
-
-                for (opponent in players.values) {
-                    if (opponent == player)
-                        continue
-
-                    val isPaid = pay(opponent, 1)
-                    logger.debug { "Session $sessionId: Player $playerId used $token, opponent ${if (isPaid) "paid 1" else "can't pay, nothing happened"}" }
+                if (!opponentPlayer.isImmuneToTokens){
+                    AnotherPlayerPayOneTokenUse(player)
                 }
             }
+            Token.IMMUNITY -> {
+                player.isImmuneToTokens = true
+            }
+            Token.EXHAUSTION -> {
+                if (!opponentPlayer.isImmuneToTokens){
+                    ExhaustionTokenUse(opponentPlayer)
+                }
+            }
+            Token.DIRECT_TRANSACTION -> {}
         }
+
+        logger.debug { "Session $sessionId: Player $playerId used $token" }
 
         gameMessageExchanger.sendAcceptedTurn(turnDTO, this)
         waitingForMoveType = listOf(
@@ -377,9 +383,12 @@ class GameSession(
 
         if (playersIter.hasNext()) {
             currentPlayerId = playersIter.next()
+            players[currentPlayerId]!!.isImmuneToTokens = false // убираем иммунитет 2-му игроку
             logger.debug { "Session $sessionId: Player $currentPlayerId is the current player" }
         }
         else {
+            playersIter = players.keys.iterator()
+            players[playersIter.next()]!!.isImmuneToTokens = false // убираем иммунитет 1-му игроку
             logger.debug { "Session $sessionId: Turn $turn is over" }
             nextTurn()
         }
@@ -495,7 +504,6 @@ class GameSession(
         val winner = playersSortedByRating.first()
         val winnerId = players.keys.find { players[it] == winner }!!
         winner.remainChips += winner.spentChips
-        forcePay(winner, winner.handRating!!.first)
 
         logger.debug { "Session $sessionId: Round $round. Winner is Player ${winner.playerId}. He is paying ${winner.handRating!!.first}" }
 
@@ -585,5 +593,42 @@ class GameSession(
         val affordablePrice = Math.min(price, player.remainChips)
         player.remainChips -= affordablePrice
         player.spentChips += affordablePrice
+    }
+
+    // Функции реализации жетонов
+    private fun NoTaxTokenUse(player : Player){
+        player.tokens.remove(Token.NO_TAX)
+
+        cardPrice = 0
+    }
+
+    private fun TakeTwoChipsTokenUse(player : Player) {
+        player.tokens.remove(Token.TAKE_TWO_CHIPS)
+
+        val minChips = min(player.spentChips, 2)
+        player.remainChips += minChips
+        player.spentChips -= minChips
+    }
+
+    private fun AnotherPlayerPayOneTokenUse(player : Player) {
+        player.tokens.remove(Token.OTHER_PLAYERS_PAY_ONE)
+
+        for (opponent in players.values) {
+            if (opponent == player)
+                continue
+
+            val isPaid = pay(opponent, 1)
+        }
+    }
+
+    private fun ExhaustionTokenUse(opponentPlayer: Player) {
+        var bloodcard = opponentPlayer.bloodCards.removeLast()
+        var sandCard = opponentPlayer.sandCards.removeLast()
+
+        board.bloodDiscardDeck.add(bloodcard)
+        board.sandDiscardDeck.add(sandCard)
+
+        opponentPlayer.bloodCards.add(board.bloodDeck.removeLast())
+        opponentPlayer.sandCards.add(board.sandDeck.removeLast())
     }
 }

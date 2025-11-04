@@ -16,5 +16,6 @@ data class Player(
     var spentChips: Int = 0,
     val bloodCards: MutableList<Card> = mutableListOf(),
     val sandCards: MutableList<Card> = mutableListOf(),
-    var handRating: Pair<Int, Int>? = null
+    var handRating: Pair<Int, Int>? = null,
+    var isImmuneToTokens: Boolean = false
 )
