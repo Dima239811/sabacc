@@ -9,7 +9,7 @@ export const useWebSocketGame = (playerId: number | undefined, sessionId: number
     if (!playerId || !sessionId) return;
 
     console.log('Создание сокета');
-    const socketUrl = `/ws/game?playerId=${playerId}&sessionId=${sessionId}`;
+    const socketUrl = `/game?playerId=${playerId}&sessionId=${sessionId}`;
     console.log('Создание сокета. URL SockJS:', socketUrl);
     const socket = new SockJS(socketUrl);
 

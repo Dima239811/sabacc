@@ -24,9 +24,11 @@ spring:
 
 security:
   cors:
-    allowed-origin: ["*"]
+    allowed-origin-patterns: ["*"]
+    allow-credentials: true
+
 websocket:
   stomp:
-    allowed-origin: http://${PUBLIC_IP}
+    allowed-origin-patterns: ["*"]
   game:
-    allowed-origin: http://${PUBLIC_IP}
+    allowed-origin-patterns: ["*"]
