@@ -8,6 +8,7 @@ import ru.ngtu.sabacc.gamecore.game.*
 import ru.ngtu.sabacc.gamecore.board.Board
 import ru.ngtu.sabacc.gamecore.player.Player
 import ru.ngtu.sabacc.gamecore.token.Token
+import ru.ngtu.sabacc.gamecore.turn.DirectTransactionInfo
 import ru.ngtu.sabacc.gamecore.turn.TurnDto
 import ru.ngtu.sabacc.gamecore.turn.TurnType
 import java.util.concurrent.CompletableFuture
@@ -360,7 +361,17 @@ class GameSession(
                     ExhaustionTokenUse(opponentPlayer)
                 }
             }
-            Token.DIRECT_TRANSACTION -> {}
+            Token.DIRECT_TRANSACTION -> {
+                if (!opponentPlayer.isImmuneToTokens){
+                    val directTransactionInfo = DirectTransactionTokenUse(player, opponentPlayer)
+                    if (turnDTO.details.isNullOrEmpty()) {
+                        turnDTO.details = mutableMapOf(
+                            "trans" to directTransactionInfo
+                        )
+                    }
+                    turnDTO.details!!["trans"] = directTransactionInfo
+                }
+            }
         }
 
         logger.debug { "Session $sessionId: Player $playerId used $token" }
@@ -459,7 +470,7 @@ class GameSession(
                     sessionId,
                     currentPlayerId,
                     TurnType.AWAITING_DICE,
-                    mapOf(
+                    mutableMapOf(
                         "first" to dice!![0],
                         "second" to dice!![1]
                     )
@@ -630,5 +641,19 @@ class GameSession(
 
         opponentPlayer.bloodCards.add(board.bloodDeck.removeLast())
         opponentPlayer.sandCards.add(board.sandDeck.removeLast())
+    }
+
+    private fun DirectTransactionTokenUse(player: Player, opponentPlayer: Player) : DirectTransactionInfo {
+        var playerBloodCard = player.bloodCards.removeLast()
+        var playerSandCard = player.sandCards.removeLast()
+        var opponentPlayerBloodCard = opponentPlayer.bloodCards.removeLast()
+        var opponentPlayerSandCard = opponentPlayer.sandCards.removeLast()
+
+        player.bloodCards.add(opponentPlayerBloodCard)
+        player.sandCards.add(opponentPlayerSandCard)
+        opponentPlayer.bloodCards.add(playerBloodCard)
+        opponentPlayer.sandCards.add(playerSandCard)
+
+        return DirectTransactionInfo(player, opponentPlayer)
     }
 }
