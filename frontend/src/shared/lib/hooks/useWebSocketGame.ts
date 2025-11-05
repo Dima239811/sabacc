@@ -10,6 +10,7 @@ export const useWebSocketGame = (playerId: number | undefined, sessionId: number
 
     console.log('Создание сокета');
     const socketUrl = `/game?playerId=${playerId}&sessionId=${sessionId}`;
+
     console.log('Создание сокета. URL SockJS:', socketUrl);
     const socket = new SockJS(socketUrl);
 

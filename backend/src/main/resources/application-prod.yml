@@ -38,6 +38,6 @@ security:
     allowed-origin-patterns:
       - "http://localhost:*"
       - "http://95.79.225.7"
-      - "https://*.loca.lt"   # ✅ разрешаем LocalTunnel
+      - "https://*.loca.lt"
     allow-credentials: true
 
