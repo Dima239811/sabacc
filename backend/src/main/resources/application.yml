@@ -19,7 +19,7 @@ spring:
 #    url: jdbc:postgresql://db:5432/sabacc
     url: jdbc:postgresql://localhost:5432/sabacc
 #    url: jdbc:postgresql://${SPRING_DATASOURCE_DATABASE_HOST:localhost}:5432/${SPRING_DATASOURCE_DATABASE_NAME:sabacc}
-    password: Dima228*
+    password: alice
     username: postgres
 #    database:
 #      host: postgres

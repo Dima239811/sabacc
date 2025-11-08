@@ -50,6 +50,9 @@ class GameSession(
                 board.bloodDeck.removeLast()
             )
         }
+
+        board.sandDiscardDeck.add(board.sandDeck.removeLast())
+        board.bloodDiscardDeck.add(board.bloodDeck.removeLast())
     }
 
     private fun initGameBoard(): Board {
@@ -355,6 +358,39 @@ class GameSession(
 
                     val isPaid = pay(opponent, 1)
                     logger.debug { "Session $sessionId: Player $playerId used $token, opponent ${if (isPaid) "paid 1" else "can't pay, nothing happened"}" }
+                }
+            }
+            Token.EXTRA_REFUND -> {
+                player.tokens.remove(Token.EXTRA_REFUND)
+                val refundChips = min(player.spentChips, 3)
+                player.remainChips += refundChips
+                player.spentChips -= refundChips
+                logger.debug { "Session $sessionId: Player $playerId used $token, $refundChips returned from the bank" }
+            }
+            Token.EMBEZZLEMENT -> {
+                player.tokens.remove(Token.EMBEZZLEMENT)
+                for (opponent in players.values) {
+                    if (opponent == player) continue
+                    if (opponent.spentChips > 0) {
+                        val chipsToTake = min(opponent.spentChips, 1)
+                        opponent.spentChips -= chipsToTake
+                        player.spentChips += chipsToTake
+                        logger.debug { "Session $sessionId: Player $playerId used $token, took $chipsToTake chip from opponent's bank" }
+                    } else {
+                        logger.debug { "Session $sessionId: Player $playerId used $token, but opponent has no chips in bank" }
+                    }
+                }
+            }
+            Token.GENERAL_AUDIT -> {
+                player.tokens.remove(Token.GENERAL_AUDIT)
+                val opponent = players.values.find { it.playerId != playerId }
+                if (opponent != null && passCount > 0) {
+                    val auditChips = min(opponent.remainChips, 2)
+                    opponent.remainChips -= auditChips
+                    opponent.spentChips += auditChips
+                    logger.debug { "Session $sessionId: Player $playerId used $token, opponent lost $auditChips chips, added to player's bank" }
+                } else {
+                    logger.debug { "Session $sessionId: Player $playerId used $token, but opponent didn't pass or no opponent found" }
                 }
             }
         }
