@@ -1,0 +1,90 @@
+.footer {
+  width: 100%;
+  padding: 0 40px;
+  display: flex;
+  gap: 10px;
+  justify-content: end;
+  position: relative;
+}
+
+.nickname {
+  margin-left: auto;
+  height: fit-content;
+  width: 250px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+  background: #000c;
+  padding: 10px 20px;
+  font: var(--font-m);
+  border: 5px solid #00b3ff;
+  transform: skew(-20deg);
+
+  span {
+    display: inline-block;
+    transform: skew(20deg);
+  }
+}
+
+@keyframes blink {
+  0%,
+  100% {
+    background-color: #00b3ff;
+  }
+
+  50% {
+    background-color: #000000;
+  }
+}
+
+.controls {
+  position: absolute;
+  bottom: 100%;
+}
+
+.currentUserTurn {
+  font-weight: bold;
+  animation: blink 1s ease-in-out infinite;
+}
+
+.button {
+  cursor: pointer;
+  background: none;
+  border: none;
+  filter: brightness(0.8) grayscale(.1);
+}
+
+.myCards {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  display: flex;
+  gap: 20px;
+  transform: translate(-50%, -50%);
+}
+
+.myBank {
+  position: absolute;
+  bottom: calc(100% + 20px);
+  left: 40px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #1b232b;
+  height: fit-content;
+  padding: 10px;
+  border-radius: 10px;
+
+  span {
+    font-weight: 300;
+    color: #dbd79e;
+    font-size: 24px;
+  }
+
+  img {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+  }
+}

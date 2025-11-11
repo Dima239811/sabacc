@@ -1,0 +1,21 @@
+.controlsContainer {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  height: 84px;
+}
+
+.cardButton {
+  background: none;
+  border: none;
+  filter: contrast(1.5);
+}
+
+.clickable {
+  cursor: pointer;
+  transform: all .2s ease-in-out;
+  
+  &:hover {
+    opacity: 0.8;
+  }
+}

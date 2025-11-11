@@ -1,0 +1,73 @@
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding-left: 20px;
+
+  li {
+    list-style: decimal;
+    font: var(--font-m);
+  }
+}
+
+.slideTitle {
+  font: var(--font-l);
+}
+
+.slideText {
+  font: var(--font-m);
+  background: none;
+}
+
+.btnBack {
+  width: 280px;
+  height: 75px;
+  border-radius: 35px;
+  border: 4px solid #FFFFFF;
+  background: linear-gradient(to right, #6073A0, #0A193A);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  color: #FFFFFF;
+  font-size: 24px;
+  cursor: pointer;
+  position: absolute;
+  right: 20px;
+  bottom: -95.5px; /* Еще дальше вниз */
+  z-index: 10; /* Отображать поверх других элементов */
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+.btnBack:hover {
+  background: linear-gradient(to right, #0A193A, #6073A0);
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.7);
+}
+
+
+
+.slideBack {
+  position: absolute;
+  bottom: 20px;
+  z-index: 2;
+  left: calc(50% - 70px);
+  transform: rotate(180deg);
+  width: 25px;
+  height: 25px;
+
+  img {
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.slideNext {
+  position: absolute;
+  bottom: 20px;
+  z-index: 2;
+  width: 25px;
+  height: 25px;
+  right: calc(50% - 70px);
+
+  img {
+    width: 100%;
+    height: 100%;
+  }
+}

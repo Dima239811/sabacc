@@ -1,0 +1,66 @@
+.Button {
+  background: none;
+  border: none;
+  color: var(--black-color);
+  cursor: pointer;
+  padding: 6px 15px;
+  transition: all .2s ease-in-out;
+  width: fit-content;
+
+  &:hover {
+    opacity: 0.8;
+  }
+}
+
+.clear {
+  padding: 0;
+
+  &:hover {
+    opacity: 1;
+  }
+}
+
+.outline {
+  padding: 8px 24px;
+  border: 1px solid var(--black-color);
+  outline: 1px solid transparent;
+  color: var(--black-color);
+  border-radius: var(--radius-circle);
+
+  &:hover {
+    opacity: 1;
+    border: 1px solid var(--main-color);
+    background-color: var(--main-color);
+    color: var(--white-color)
+  }
+}
+
+
+.btn {
+  width: 399px;
+  height: 91px;
+  padding: 0;
+  background: linear-gradient(90deg, #004BFB, #00B7FF, #04002F);
+  border: 1px solid rgba(255, 255, 255, 0.94);
+  border-radius: 35px;
+  color: #FFFFFF;
+  font-family: 'IBM Plex Mono', monospace;
+  font-weight: 600;
+  font-size: 40px;
+  line-height: 100%;
+  text-align: center;
+  backdrop-filter: blur(10px);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all .2s ease-in-out;
+
+  &:hover {
+    opacity: 0.9;
+  }
+}
+
+.fullwidth {
+  width: 100%;
+}

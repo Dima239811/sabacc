@@ -1,0 +1,67 @@
+.default {
+  color: var(--black-color);
+
+  &:hover {
+    color: var(--main-color);
+  }
+}
+
+.main {
+  color: var(--main-color);
+
+  &:hover {
+    color: var(--black-color);
+  }
+}
+
+.btn {
+  width: 400px;
+  height: 95px;
+  padding: 0;
+  background: linear-gradient(90deg, #0A193A, #6073A0);
+  border: 2px solid rgba(243, 242, 238, 0.5);
+  border-radius: 35px;
+  color: #FFFFFF;
+  font-family: 'IBM Plex Mono', monospace;
+  font-weight: 500;
+  font-size: 36px;
+  line-height: 100%;
+  text-align: center;
+  backdrop-filter: blur(10px);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all .2s ease-in-out;
+
+  &:hover {
+    opacity: 0.9;
+  }
+}
+
+.dark {
+  padding: 12px 20px;
+  background-color: #888;
+  color: #fff;
+  border-radius: var(--radius-circle);
+  width: 100%;
+  text-align: center;
+  transition: all .2s ease-in-out;
+
+  &:hover {
+    background-color: #000;
+  }
+}
+
+.withIcon {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
+.linkIcon {
+  width: var(--line-height-s);
+  height: var(--line-height-s);
+}
+
