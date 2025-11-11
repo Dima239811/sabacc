@@ -1,0 +1,126 @@
+.header {
+  width: 100%;
+  padding: 0 40px;
+  display: flex;
+  gap: 10px;
+  justify-content: start;
+  position: relative;
+  z-index: 2;
+}
+
+.curTurn {
+  position: absolute;
+  height: 100%;
+  right: 210px;
+  bottom: 0;
+  background: #000c;
+  padding: 5px 20px;
+  transform: skew(-20deg);
+  border: 5px solid #00b3ff;
+  font: var(--font-m);
+  animation: blink 1s ease-in-out infinite;
+
+  img {
+    width: 20px;
+    height: 100%;
+    filter: invert(1);
+    transform: skew(20deg) rotate(180deg);
+
+    &.cur {
+      transform: skew(20deg) rotate(0);
+    }
+  }
+}
+
+.nickname {
+  margin-right: auto;
+  height: fit-content;
+  width: 250px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+  background: #000c;
+  padding: 10px 20px;
+  transform: skew(-20deg);
+  border: 5px solid #00b3ff;
+  font: var(--font-m);
+
+  span {
+    display: inline-block;
+    transform: skew(20deg);
+  }
+}
+
+.controls {
+  position: absolute;
+  top: 100%;
+  transform: rotate(180deg);
+}
+
+@keyframes blink {
+
+  0%,
+  100% {
+    background-color: #00b3ff;
+  }
+
+  50% {
+    background-color: #000000;
+  }
+}
+
+.currentUserTurn {
+  font-weight: bold;
+  animation: blink 1s ease-in-out infinite;
+}
+
+.myCards {
+  position: absolute;
+  top: 80%;
+  left: 50%;
+  display: flex;
+  gap: 20px;
+  transform: translate(-50%, -50%);
+}
+
+.roundContainer {
+  position: absolute;
+  bottom: 0;
+  right: 40px;
+  padding: 15px 30px;
+  background-color: #000c;
+  font-size: 20px;
+  transform: skew(-20deg);
+  border: 5px solid #00b3ff;
+
+  span {
+    display: inline-block;
+    transform: skew(20deg);
+  }
+}
+
+.myBank {
+  position: absolute;
+  top: calc(100% + 20px);
+  right: 40px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #1b232b;
+  height: fit-content;
+  padding: 10px;
+  border-radius: 10px;
+
+  span {
+    font-weight: 300;
+    color: #dbd79e;
+    font-size: 24px;
+  }
+
+  img {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+  }
+}

@@ -1,0 +1,110 @@
+import org.springframework.boot.gradle.plugin.SpringBootPlugin
+
+plugins {
+    id 'java'
+    id 'org.jetbrains.kotlin.jvm' version '1.9.23'
+    id 'org.springframework.boot' version '3.3.4'
+    id 'io.spring.dependency-management' version '1.1.6'
+    id 'application' // ← Добавьте это для dev запуска
+}
+
+group = 'ru.ngtu'
+version = '0.0.1-SNAPSHOT'
+
+springBoot {
+    mainClass = 'ru.ngtu.sabacc.SabaccApplication' // ← Укажите ваш главный класс
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+    developmentOnly // ← Добавьте эту конфигурацию
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-data-rest'
+
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'io.micrometer:micrometer-registry-prometheus'
+
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-api:2.4.0'
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.4.0'
+
+    implementation 'io.jsonwebtoken:jjwt-api:0.10.5'
+    implementation 'io.jsonwebtoken:jjwt-impl:0.10.5'
+    implementation 'io.jsonwebtoken:jjwt-jackson:0.10.5'
+
+    implementation 'org.mapstruct:mapstruct:1.6.2'
+//    implementation 'com.fasterxml.jackson.core:jackson-databind:2.18.0'
+//    implementation 'com.fasterxml.jackson.module:jackson-module-kotlin:2.18.0'
+
+    implementation 'org.flywaydb:flyway-core'
+    implementation 'org.flywaydb:flyway-database-postgresql'
+
+    compileOnly 'org.projectlombok:lombok'
+    implementation 'io.github.microutils:kotlin-logging:3.0.5'
+
+    // ← Критически важно для hot reload!
+    developmentOnly 'org.springframework.boot:spring-boot-devtools' // ← Добавьте это
+
+    runtimeOnly 'org.postgresql:postgresql'
+
+    annotationProcessor 'org.projectlombok:lombok'
+    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+    annotationProcessor 'org.mapstruct:mapstruct-processor:1.6.2'
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.jetbrains.kotlin:kotlin-test'
+
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    implementation platform(SpringBootPlugin.BOM_COORDINATES)
+}
+
+dependencyManagement {
+    imports {
+        mavenBom(SpringBootPlugin.BOM_COORDINATES)
+    }
+}
+
+// ← Добавьте эти задачи для hot reload
+tasks.named('bootRun') {
+    classpath = sourceSets.main.runtimeClasspath + configurations.developmentOnly
+    systemProperties = System.properties
+}
+
+tasks.named('compileJava') {
+    inputs.files(tasks.named('processResources'))
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.compilerArgs.add("-parameters")
+}
+
+// ← Конфигурация для development режима
+//application {
+//    mainClass = 'ru.ngtu.sabacc.SabaccApplication'
+//}
+
+
+// ← Задача для непрерывной сборки (опционально)
+//task.continuousBuild(type: JavaExec) {
+//    classpath = sourceSets.main.runtimeClasspath + configurations.developmentOnly
+//    mainClass = 'org.springframework.boot.devtools.RemoteSpringApplication'
+//    args = ['http://localhost:8080']
+//}
+
