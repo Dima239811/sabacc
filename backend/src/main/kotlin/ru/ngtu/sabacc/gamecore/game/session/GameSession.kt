@@ -586,7 +586,7 @@ class GameSession(
             }
         }
     }
-
+    //
     // Difference and strength of hand
     private fun rateHand(sandCard: Card, bloodCard: Card): Pair<Int, Int> {
         if (sandCard is Card.SylopCard &&
