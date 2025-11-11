@@ -12,7 +12,6 @@ data class Player(
         Token.TAKE_TWO_CHIPS,
         Token.OTHER_PLAYERS_PAY_ONE,
         Token.EMBARGO,
-        Token.TARGET_AUDIT,
     ),
     var remainChips: Int = 4,
     var spentChips: Int = 0,

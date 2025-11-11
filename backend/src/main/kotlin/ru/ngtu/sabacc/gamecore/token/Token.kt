@@ -5,5 +5,4 @@ enum class Token {
     TAKE_TWO_CHIPS,
     OTHER_PLAYERS_PAY_ONE,
     EMBARGO,
-    TARGET_AUDIT,
 }

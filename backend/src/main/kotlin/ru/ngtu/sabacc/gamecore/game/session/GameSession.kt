@@ -379,32 +379,7 @@ class GameSession(
                 logger.debug { "Session $sessionId: Player $playerId used $token, next player will be forced to skip" }
             }
 
-            Token.TARGET_AUDIT -> {
-                player.tokens.remove(Token.TARGET_AUDIT)
-
-                // Получаем оппонента
-                val opponentId = players.keys.first { it != playerId }
-                val opponent = players[opponentId]!!
-
-                logger.debug { "Session $sessionId: Player $playerId used $token, targeting Player $opponentId" }
-
-                // Проверяем, находится ли оппонент в пасе
-                if (opponent.isInPassState) {
-                    // Оппонент в пасе - заставляем его сбросить 2 фишки
-                    val chipsToDiscard = min(2, opponent.remainChips)
-                    opponent.remainChips -= chipsToDiscard
-                    opponent.spentChips += chipsToDiscard
-
-                    logger.debug {
-                        "Session $sessionId: Player $opponentId is in pass state and must discard $chipsToDiscard chips due to $token"
-                    }
-                } else {
-                    // Оппонент не в пасе - ничего не происходит
-                    logger.debug {
-                        "Session $sessionId: Player $opponentId is not in pass state, $token has no effect"
-                    }
-                }
-            }
+            // TARGET_AUDIT логика полностью удалена
         }
 
         gameMessageExchanger.sendAcceptedTurn(turnDTO, this)

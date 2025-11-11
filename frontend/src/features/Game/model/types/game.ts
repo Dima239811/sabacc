@@ -13,7 +13,6 @@ export enum TokensTypes {
   TAKE_TWO_CHIPS = "TAKE_TWO_CHIPS",
   OTHER_PLAYERS_PAY_ONE = "OTHER_PLAYERS_PAY_ONE",
   EMBARGO = "EMBARGO",
-
 }
 export interface GameState {
   currentPlayerId: number;
