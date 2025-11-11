@@ -30,10 +30,7 @@ const tokenData = [
     type: TokensTypes.EMBARGO,
     image: token1,
   },
-{
-    type: TokensTypes.TARGET_AUDIT,
-    image: token1,
-  },
+
 
 ];
 
