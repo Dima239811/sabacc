@@ -761,7 +761,7 @@ class GameSession(
                 sessionId,
                 playerId,
                 TurnType.SELECT_TOKEN,
-                mapOf("availableTokens" to availableTokens)
+                mutableMapOf("availableTokens" to availableTokens)
             ), this
         )
 
