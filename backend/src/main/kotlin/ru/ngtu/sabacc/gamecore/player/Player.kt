@@ -16,6 +16,7 @@ data class Player(
         Token.GENERAL_AUDIT,
         Token.IMPOSTERS_TO_SIX,
         Token.SYLOP_TO_ZERO,
+        Token.EMBARGO,
         Token.COOK_THE_BOOKS
     ),
     var remainChips: Int = 4,
@@ -24,4 +25,5 @@ data class Player(
     val sandCards: MutableList<Card> = mutableListOf(),
     var handRating: Pair<Int, Int>? = null,
     var isImmuneToTokens: Boolean = false
+    var isInPassState: Boolean = false
 )

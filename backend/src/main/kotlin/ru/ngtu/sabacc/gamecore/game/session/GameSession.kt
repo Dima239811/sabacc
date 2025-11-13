@@ -28,6 +28,7 @@ class GameSession(
         playerFirstId to Player(playerFirstId),
         playerSecondId to Player(playerSecondId)
     )
+    private var skipNextPlayer: Boolean = false
     private var playersIter = players.keys.iterator()
     private var currentPlayerId: Long = playersIter.next()
     private lateinit var board: Board
@@ -183,8 +184,19 @@ class GameSession(
     }
 
     private fun pass(turnDTO: TurnDto) {
-        logger.debug { "Session $sessionId: Player ${turnDTO.playerId} skipped his turn" }
+        val isForced = turnDTO.details?.get("forced") as? Boolean ?: false
+        val playerId = turnDTO.playerId
+        val player = players[playerId]!!
+
+        // ВСЕ пропуски (обычные и принудительные) увеличивают счётчик
         passCount++
+
+        // Помечаем игрока как находящегося в пасе
+        player.isInPassState = true
+
+        logger.debug {
+            "Session $sessionId: Player ${turnDTO.playerId} ${if (isForced) "was forced to skip" else "skipped his turn"}"
+        }
 
         gameMessageExchanger.sendAcceptedTurn(turnDTO, this)
         nextState()
@@ -431,6 +443,11 @@ class GameSession(
 
                 logger.debug { "Session $sessionId: Player $playerId used $token, card ranks are now inverted until end of round" }
             }
+            Token.EMBARGO -> {
+                player.tokens.remove(Token.EMBARGO)
+                skipNextPlayer = true
+                logger.debug { "Session $sessionId: Player $playerId used $token, next player will be forced to skip" }
+            }
         }
 
         logger.debug { "Session $sessionId: Player $playerId used $token" }
@@ -450,6 +467,33 @@ class GameSession(
 
         waitingForMoveType = initWaitingForMoveType()
         cardPrice = 1
+
+        // ВАЖНО: сбрасываем skipNextPlayer при ЛЮБОМ переходе хода
+        val shouldSkipNextPlayer = skipNextPlayer
+        skipNextPlayer = false  // Сбрасываем сразу
+
+        // Проверяем, нужно ли пропустить следующего игрока
+        if (shouldSkipNextPlayer) {
+            if (playersIter.hasNext()) {
+                val skippedPlayerId = playersIter.next()
+                logger.debug { "Session $sessionId: Player $skippedPlayerId was forced to skip by token" }
+
+                // Используем существующую логику пропуска через функцию pass
+                val forcedPassTurn = TurnDto(
+                    sessionId,
+                    skippedPlayerId,
+                    TurnType.PASS,
+                    mapOf("forced" to true)  // Отмечаем как принудительный
+                )
+
+                // Отправляем уведомление о принудительном пропуске
+                gameMessageExchanger.sendAcceptedTurn(forcedPassTurn, this)
+
+                // Вызываем pass для обработки пропуска
+                pass(forcedPassTurn)
+                return  // Выходим, так как pass уже вызовет nextState()
+            }
+        }
 
         if (playersIter.hasNext()) {
             currentPlayerId = playersIter.next()
@@ -638,7 +682,6 @@ class GameSession(
             }
         }
     }
-
     // Difference and strength of hand
     private fun rateHand(sandCard: Card, bloodCard: Card): Pair<Int, Int> {
         // Если активен токен Sylop=0, считаем Sylop как 0
@@ -679,6 +722,8 @@ class GameSession(
         SylopToZeroActive = false
         isCookTheBooksActive = false
 
+        // Сбрасываем состояния паса для всех игроков
+        players.values.forEach { it.isInPassState = false }
         logger.debug { "Session $sessionId: Starting next round. Round $round" }
 
         start()

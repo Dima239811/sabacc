@@ -12,5 +12,6 @@ enum class Token {
     DIRECT_TRANSACTION,
     IMPOSTERS_TO_SIX,
     SYLOP_TO_ZERO,
-    COOK_THE_BOOKS
+    COOK_THE_BOOKS,
+    EMBARGO
 }

@@ -37,7 +37,12 @@ const tokenData = [
   {
     type: TokensTypes.COOK_THE_BOOKS,
     image: token1,
-  }
+  },
+  {
+    type: TokensTypes.EMBARGO,
+    image: token1,
+  },
+
 ];
 
 export const GameTokens = memo((props: GameTokensProps) => {

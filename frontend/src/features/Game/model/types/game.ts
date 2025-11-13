@@ -15,6 +15,7 @@ export enum TokensTypes {
   IMPOSTERS_TO_SIX = "IMPOSTERS_TO_SIX",
   SYLOP_TO_ZERO = "SYLOP_TO_ZERO",
   COOK_THE_BOOKS = "COOK_THE_BOOKS",
+  EMBARGO = "EMBARGO",
 }
 export interface GameState {
   currentPlayerId: number;
