@@ -360,25 +360,31 @@ class GameSession(
 
         when(token) {
             Token.NO_TAX -> {
+                player.tokens.remove(Token.NO_TAX)
                 NoTaxTokenUse(player)
             }
             Token.TAKE_TWO_CHIPS -> {
+                player.tokens.remove(Token.TAKE_TWO_CHIPS)
                 TakeTwoChipsTokenUse(player)
             }
             Token.OTHER_PLAYERS_PAY_ONE -> {
+                player.tokens.remove(Token.OTHER_PLAYERS_PAY_ONE)
                 if (!opponentPlayer.isImmuneToTokens){
                     AnotherPlayerPayOneTokenUse(player)
                 }
             }
             Token.IMMUNITY -> {
+                player.tokens.remove(Token.IMMUNITY)
                 player.isImmuneToTokens = true
             }
             Token.EXHAUSTION -> {
+                player.tokens.remove(Token.EXHAUSTION)
                 if (!opponentPlayer.isImmuneToTokens){
                     ExhaustionTokenUse(opponentPlayer)
                 }
             }
             Token.DIRECT_TRANSACTION -> {
+                player.tokens.remove(Token.DIRECT_TRANSACTION)
                 if (!opponentPlayer.isImmuneToTokens){
                     val directTransactionInfo = DirectTransactionTokenUse(player, opponentPlayer)
                     if (turnDTO.details.isNullOrEmpty()) {
@@ -398,55 +404,63 @@ class GameSession(
             }
             Token.EMBEZZLEMENT -> {
                 player.tokens.remove(Token.EMBEZZLEMENT)
-                for (opponent in players.values) {
-                    if (opponent == player) continue
-                    if (opponent.spentChips > 0) {
-                        val chipsToTake = min(opponent.spentChips, 1)
-                        opponent.spentChips -= chipsToTake
-                        player.spentChips += chipsToTake
-                        logger.debug { "Session $sessionId: Player $playerId used $token, took $chipsToTake chip from opponent's bank" }
-                    } else {
-                        logger.debug { "Session $sessionId: Player $playerId used $token, but opponent has no chips in bank" }
+                if (!opponentPlayer.isImmuneToTokens){
+                    for (opponent in players.values) {
+                        if (opponent == player) continue
+                        if (opponent.spentChips > 0) {
+                            val chipsToTake = min(opponent.spentChips, 1)
+                            opponent.spentChips -= chipsToTake
+                            player.spentChips += chipsToTake
+                            logger.debug { "Session $sessionId: Player $playerId used $token, took $chipsToTake chip from opponent's bank" }
+                        } else {
+                            logger.debug { "Session $sessionId: Player $playerId used $token, but opponent has no chips in bank" }
+                        }
                     }
                 }
+
             }
             Token.GENERAL_AUDIT -> {
                 player.tokens.remove(Token.GENERAL_AUDIT)
-                val opponent = players.values.find { it.playerId != playerId }
-                if (opponent != null && passCount > 0) {
-                    val auditChips = min(opponent.remainChips, 2)
-                    opponent.remainChips -= auditChips
-                    opponent.spentChips += auditChips
-                    logger.debug { "Session $sessionId: Player $playerId used $token, opponent lost $auditChips chips, added to player's bank" }
-                } else {
-                    logger.debug { "Session $sessionId: Player $playerId used $token, but opponent didn't pass or no opponent found" }
+                if (!opponentPlayer.isImmuneToTokens){
+                    val opponent = players.values.find { it.playerId != playerId }
+                    if (opponent != null && passCount > 0) {
+                        val auditChips = min(opponent.remainChips, 2)
+                        opponent.remainChips -= auditChips
+                        opponent.spentChips += auditChips
+                        logger.debug { "Session $sessionId: Player $playerId used $token, opponent lost $auditChips chips, added to player's bank" }
+                    } else {
+                        logger.debug { "Session $sessionId: Player $playerId used $token, but opponent didn't pass or no opponent found" }
+                    }
                 }
             }
             Token.IMPOSTERS_TO_SIX -> {
                 player.tokens.remove(Token.IMPOSTERS_TO_SIX)
-
-                impostersToSixActive = true  // Активируем эффект
-
-                logger.debug { "Session $sessionId: Player $playerId used $token, all Imposter cards will become 6 at round end" }
+                if (!opponentPlayer.isImmuneToTokens){
+                    impostersToSixActive = true  // Активируем эффект
+                    logger.debug { "Session $sessionId: Player $playerId used $token, all Imposter cards will become 6 at round end" }
+                }
             }
             Token.SYLOP_TO_ZERO -> {
                 player.tokens.remove(Token.SYLOP_TO_ZERO)
+                if (!opponentPlayer.isImmuneToTokens){
+                    SylopToZeroActive = true  // Активируем эффект
+                    logger.debug { "Session $sessionId: Player $playerId used $token, all Imposter cards will become 6 at round end" }
+                }
 
-                SylopToZeroActive = true  // Активируем эффект
-
-                logger.debug { "Session $sessionId: Player $playerId used $token, all Imposter cards will become 6 at round end" }
             }
             Token.COOK_THE_BOOKS -> {
                 player.tokens.remove(Token.COOK_THE_BOOKS)
-
-                isCookTheBooksActive = true // Активируем эффект
-
-                logger.debug { "Session $sessionId: Player $playerId used $token, card ranks are now inverted until end of round" }
+                if (!opponentPlayer.isImmuneToTokens){
+                    isCookTheBooksActive = true // Активируем эффект
+                    logger.debug { "Session $sessionId: Player $playerId used $token, card ranks are now inverted until end of round" }
+                }
             }
             Token.EMBARGO -> {
                 player.tokens.remove(Token.EMBARGO)
-                skipNextPlayer = true
-                logger.debug { "Session $sessionId: Player $playerId used $token, next player will be forced to skip" }
+                if (!opponentPlayer.isImmuneToTokens){
+                    skipNextPlayer = true
+                    logger.debug { "Session $sessionId: Player $playerId used $token, next player will be forced to skip" }
+                }
             }
         }
 
@@ -483,7 +497,7 @@ class GameSession(
                     sessionId,
                     skippedPlayerId,
                     TurnType.PASS,
-                    mapOf("forced" to true)  // Отмечаем как принудительный
+                    mutableMapOf("forced" to true)  // Отмечаем как принудительный
                 )
 
                 // Отправляем уведомление о принудительном пропуске
@@ -746,22 +760,16 @@ class GameSession(
 
     // Функции реализации жетонов
     private fun NoTaxTokenUse(player : Player){
-        player.tokens.remove(Token.NO_TAX)
-
         cardPrice = 0
     }
 
     private fun TakeTwoChipsTokenUse(player : Player) {
-        player.tokens.remove(Token.TAKE_TWO_CHIPS)
-
         val minChips = min(player.spentChips, 2)
         player.remainChips += minChips
         player.spentChips -= minChips
     }
 
     private fun AnotherPlayerPayOneTokenUse(player : Player) {
-        player.tokens.remove(Token.OTHER_PLAYERS_PAY_ONE)
-
         for (opponent in players.values) {
             if (opponent == player)
                 continue
