@@ -39,6 +39,10 @@ class GameSession(
     private var pause = false
     private var dice: Array<Int>? = null
 
+    private var impostersToSixActive: Boolean = false  // Новый флаг
+    private var SylopToZeroActive: Boolean = false  // Новый флаг
+    private var isCookTheBooksActive: Boolean = false  // Новый флаг
+
     override fun start() {
         board = initGameBoard()
         waitingForMoveType = initWaitingForMoveType()
@@ -95,7 +99,8 @@ class GameSession(
             TurnType.GET_BLOOD,
             TurnType.GET_SAND_DISCARD,
             TurnType.GET_BLOOD_DISCARD,
-            TurnType.PLAY_TOKEN
+            TurnType.PLAY_TOKEN,
+            TurnType.SELECT_TOKEN
         )
     }
 
@@ -405,6 +410,27 @@ class GameSession(
                     logger.debug { "Session $sessionId: Player $playerId used $token, but opponent didn't pass or no opponent found" }
                 }
             }
+            Token.IMPOSTERS_TO_SIX -> {
+                player.tokens.remove(Token.IMPOSTERS_TO_SIX)
+
+                impostersToSixActive = true  // Активируем эффект
+
+                logger.debug { "Session $sessionId: Player $playerId used $token, all Imposter cards will become 6 at round end" }
+            }
+            Token.SYLOP_TO_ZERO -> {
+                player.tokens.remove(Token.SYLOP_TO_ZERO)
+
+                SylopToZeroActive = true  // Активируем эффект
+
+                logger.debug { "Session $sessionId: Player $playerId used $token, all Imposter cards will become 6 at round end" }
+            }
+            Token.COOK_THE_BOOKS -> {
+                player.tokens.remove(Token.COOK_THE_BOOKS)
+
+                isCookTheBooksActive = true // Активируем эффект
+
+                logger.debug { "Session $sessionId: Player $playerId used $token, card ranks are now inverted until end of round" }
+            }
         }
 
         logger.debug { "Session $sessionId: Player $playerId used $token" }
@@ -486,6 +512,22 @@ class GameSession(
     }
 
     private fun replaceImposterCard(turnDTO: TurnDto?, cards: MutableList<Card>) {
+        if (impostersToSixActive) {
+            val imposterCard = cards.removeLast()
+            val valueCard = Card.ValueCard(6)  // Всегда 6
+            cards.add(valueCard)
+
+            logger.debug { "Session $sessionId: Player $currentPlayerId Imposter card automatically replaced by 6 due to token" }
+
+            // Переходим к следующему Самозванцу
+            CompletableFuture.runAsync {
+                TimeUnit.SECONDS.sleep(1)
+                processImposterCard()
+            }
+            return
+        }
+
+
         if (turnDTO == null) {
             dice = arrayOf(
                 (1..6).random(),
@@ -539,10 +581,18 @@ class GameSession(
             logger.debug { "Session $sessionId: Round $round. Player ${player.playerId} has hand rating of ${player.handRating}" }
         }
 
-        val playersSortedByRating = players.values.sortedWith(compareBy(
-            { it.handRating!!.first },
-            { it.handRating!!.second }
-        ))
+        // ПРОСТАЯ ЛОГИКА СОРТИРОВКИ
+        val playersSortedByRating = if (isCookTheBooksActive) {
+            // При COOK_THE_BOOKS: инвертируем порядок - лучшая рука становится худшей и наоборот
+            players.values.sortedWith(compareByDescending<Player> { it.handRating!!.first }
+                .thenByDescending { it.handRating!!.second })
+        } else {
+            // Обычная логика: сначала по разнице (меньше лучше), потом по силе (меньше лучше)
+            players.values.sortedWith(compareBy(
+                { it.handRating!!.first },
+                { it.handRating!!.second }
+            ))
+        }
 
         // Collect taxes
         val winner = playersSortedByRating.first()
@@ -591,25 +641,31 @@ class GameSession(
 
     // Difference and strength of hand
     private fun rateHand(sandCard: Card, bloodCard: Card): Pair<Int, Int> {
-        if (sandCard is Card.SylopCard &&
-            bloodCard is Card.SylopCard)
+        // Если активен токен Sylop=0, считаем Sylop как 0
+        if (SylopToZeroActive) {
+            val sandValue = if (sandCard is Card.SylopCard) 0 else (sandCard as Card.ValueCard).value
+            val bloodValue = if (bloodCard is Card.SylopCard) 0 else (bloodCard as Card.ValueCard).value
+
+            val difference = Math.abs(bloodValue - sandValue)
+            val strength = Math.max(bloodValue, sandValue)
+            return Pair(difference, strength)
+        }
+
+        // Старая логика (без токена)
+        if (sandCard is Card.SylopCard && bloodCard is Card.SylopCard)
             return Pair(0, 0)
-
-        if (sandCard is Card.SylopCard &&
-            bloodCard is Card.ValueCard) {
+        if (sandCard is Card.SylopCard && bloodCard is Card.ValueCard)
             return Pair(0, bloodCard.value)
-        }
-
-        if (bloodCard is Card.SylopCard &&
-            sandCard is Card.ValueCard) {
+        if (bloodCard is Card.SylopCard && sandCard is Card.ValueCard)
             return Pair(0, sandCard.value)
-        }
 
-        val bloodCardCast = bloodCard as Card.ValueCard
-        val sandCardCast = sandCard as Card.ValueCard
+        // Обе карты числовые
+        val sandValue = (sandCard as Card.ValueCard).value
+        val bloodValue = (bloodCard as Card.ValueCard).value
 
-        val difference = Math.abs(bloodCardCast.value - sandCardCast.value)
-        return Pair(difference, Math.max(bloodCardCast.value, sandCardCast.value))
+        val difference = Math.abs(bloodValue - sandValue)
+        val strength = Math.max(bloodValue, sandValue)
+        return Pair(difference, strength)
     }
 
     private fun nextRound() {
@@ -618,6 +674,10 @@ class GameSession(
         playersIter = players.keys.iterator()
         currentPlayerId = playersIter.next()
         passCount = 0
+
+        impostersToSixActive = false
+        SylopToZeroActive = false
+        isCookTheBooksActive = false
 
         logger.debug { "Session $sessionId: Starting next round. Round $round" }
 
@@ -688,5 +748,23 @@ class GameSession(
         opponentPlayer.sandCards.add(playerSandCard)
 
         return DirectTransactionInfo(player, opponentPlayer)
+    }
+
+    private fun requestTokenSelection(playerId: Long) {
+        val player = players[playerId]!!
+        val availableTokens = player.tokens.map { it.name }
+
+        logger.debug { "Session $sessionId: Player $playerId must choose a token" }
+
+        gameMessageExchanger.sendAcceptedTurn(
+            TurnDto(
+                sessionId,
+                playerId,
+                TurnType.SELECT_TOKEN,
+                mapOf("availableTokens" to availableTokens)
+            ), this
+        )
+
+        waitingForMoveType = listOf(TurnType.PLAY_TOKEN)
     }
 }

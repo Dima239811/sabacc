@@ -13,7 +13,10 @@ data class Player(
         Token.OTHER_PLAYERS_PAY_ONE,
         Token.EXTRA_REFUND,
         Token.EMBEZZLEMENT,
-        Token.GENERAL_AUDIT
+        Token.GENERAL_AUDIT,
+        Token.IMPOSTERS_TO_SIX,
+        Token.SYLOP_TO_ZERO,
+        Token.COOK_THE_BOOKS
     ),
     var remainChips: Int = 4,
     var spentChips: Int = 0,

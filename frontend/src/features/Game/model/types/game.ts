@@ -11,7 +11,10 @@ export enum GameStatus {
 export enum TokensTypes {
   NO_TAX = "NO_TAX",
   TAKE_TWO_CHIPS = "TAKE_TWO_CHIPS",
-  OTHER_PLAYERS_PAY_ONE = "OTHER_PLAYERS_PAY_ONE"
+  OTHER_PLAYERS_PAY_ONE = "OTHER_PLAYERS_PAY_ONE",
+  IMPOSTERS_TO_SIX = "IMPOSTERS_TO_SIX",
+  SYLOP_TO_ZERO = "SYLOP_TO_ZERO",
+  COOK_THE_BOOKS = "COOK_THE_BOOKS",
 }
 export interface GameState {
   currentPlayerId: number;

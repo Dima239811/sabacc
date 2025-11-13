@@ -26,6 +26,18 @@ const tokenData = [
     type: TokensTypes.OTHER_PLAYERS_PAY_ONE,
     image: token1,
   },
+  {
+    type: TokensTypes.IMPOSTERS_TO_SIX,
+    image: token1,
+  },
+  {
+    type: TokensTypes.SYLOP_TO_ZERO,
+    image: token1,
+  },
+  {
+    type: TokensTypes.COOK_THE_BOOKS,
+    image: token1,
+  }
 ];
 
 export const GameTokens = memo((props: GameTokensProps) => {
