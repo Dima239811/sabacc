@@ -10,7 +10,10 @@ data class Player(
     val tokens: MutableList<Token> = mutableListOf(
         Token.NO_TAX,
         Token.TAKE_TWO_CHIPS,
-        Token.OTHER_PLAYERS_PAY_ONE
+        Token.OTHER_PLAYERS_PAY_ONE,
+        Token.EXTRA_REFUND,
+        Token.EMBEZZLEMENT,
+        Token.GENERAL_AUDIT
     ),
     var remainChips: Int = 4,
     var spentChips: Int = 0,
