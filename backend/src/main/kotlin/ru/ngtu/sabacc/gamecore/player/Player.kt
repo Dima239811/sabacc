@@ -10,11 +10,20 @@ data class Player(
     val tokens: MutableList<Token> = mutableListOf(
         Token.NO_TAX,
         Token.TAKE_TWO_CHIPS,
-        Token.OTHER_PLAYERS_PAY_ONE
+        Token.OTHER_PLAYERS_PAY_ONE,
+        Token.EXTRA_REFUND,
+        Token.EMBEZZLEMENT,
+        Token.GENERAL_AUDIT,
+        Token.IMPOSTERS_TO_SIX,
+        Token.SYLOP_TO_ZERO,
+        Token.EMBARGO,
+        Token.COOK_THE_BOOKS
     ),
     var remainChips: Int = 4,
     var spentChips: Int = 0,
     val bloodCards: MutableList<Card> = mutableListOf(),
     val sandCards: MutableList<Card> = mutableListOf(),
-    var handRating: Pair<Int, Int>? = null
+    var handRating: Pair<Int, Int>? = null,
+    var isImmuneToTokens: Boolean = false,
+    var isInPassState: Boolean = false
 )

@@ -8,6 +8,7 @@ import ru.ngtu.sabacc.gamecore.game.*
 import ru.ngtu.sabacc.gamecore.board.Board
 import ru.ngtu.sabacc.gamecore.player.Player
 import ru.ngtu.sabacc.gamecore.token.Token
+import ru.ngtu.sabacc.gamecore.turn.DirectTransactionInfo
 import ru.ngtu.sabacc.gamecore.turn.TurnDto
 import ru.ngtu.sabacc.gamecore.turn.TurnType
 import java.util.concurrent.CompletableFuture
@@ -27,6 +28,7 @@ class GameSession(
         playerFirstId to Player(playerFirstId),
         playerSecondId to Player(playerSecondId)
     )
+    private var skipNextPlayer: Boolean = false
     private var playersIter = players.keys.iterator()
     private var currentPlayerId: Long = playersIter.next()
     private lateinit var board: Board
@@ -37,6 +39,10 @@ class GameSession(
     private var cardPrice: Int = 1
     private var pause = false
     private var dice: Array<Int>? = null
+
+    private var impostersToSixActive: Boolean = false  // Новый флаг
+    private var SylopToZeroActive: Boolean = false  // Новый флаг
+    private var isCookTheBooksActive: Boolean = false  // Новый флаг
 
     override fun start() {
         board = initGameBoard()
@@ -50,6 +56,9 @@ class GameSession(
                 board.bloodDeck.removeLast()
             )
         }
+
+        board.sandDiscardDeck.add(board.sandDeck.removeLast())
+        board.bloodDiscardDeck.add(board.bloodDeck.removeLast())
     }
 
     private fun initGameBoard(): Board {
@@ -91,7 +100,8 @@ class GameSession(
             TurnType.GET_BLOOD,
             TurnType.GET_SAND_DISCARD,
             TurnType.GET_BLOOD_DISCARD,
-            TurnType.PLAY_TOKEN
+            TurnType.PLAY_TOKEN,
+            TurnType.SELECT_TOKEN
         )
     }
 
@@ -174,8 +184,19 @@ class GameSession(
     }
 
     private fun pass(turnDTO: TurnDto) {
-        logger.debug { "Session $sessionId: Player ${turnDTO.playerId} skipped his turn" }
+        val isForced = turnDTO.details?.get("forced") as? Boolean ?: false
+        val playerId = turnDTO.playerId
+        val player = players[playerId]!!
+
+        // ВСЕ пропуски (обычные и принудительные) увеличивают счётчик
         passCount++
+
+        // Помечаем игрока как находящегося в пасе
+        player.isInPassState = true
+
+        logger.debug {
+            "Session $sessionId: Player ${turnDTO.playerId} ${if (isForced) "was forced to skip" else "skipped his turn"}"
+        }
 
         gameMessageExchanger.sendAcceptedTurn(turnDTO, this)
         nextState()
@@ -331,33 +352,119 @@ class GameSession(
             return
         }
 
+        var opponentPlayer: Player = Player(1) // заглушка
+        for (opponent in players.values) {
+            if (opponent != player)
+                opponentPlayer = opponent
+        }
+
         when(token) {
             Token.NO_TAX -> {
                 player.tokens.remove(Token.NO_TAX)
-
-                cardPrice = 0
-                logger.debug { "Session $sessionId: Player $playerId used $token, now the card price is $cardPrice" }
+                NoTaxTokenUse(player)
             }
             Token.TAKE_TWO_CHIPS -> {
                 player.tokens.remove(Token.TAKE_TWO_CHIPS)
-
-                val minChips = min(player.spentChips, 2)
-                player.remainChips += minChips
-                player.spentChips -= minChips
-                logger.debug { "Session $sessionId: Player $playerId used $token, $minChips returned from the bank" }
+                TakeTwoChipsTokenUse(player)
             }
             Token.OTHER_PLAYERS_PAY_ONE -> {
                 player.tokens.remove(Token.OTHER_PLAYERS_PAY_ONE)
+                if (!opponentPlayer.isImmuneToTokens){
+                    AnotherPlayerPayOneTokenUse(player)
+                }
+            }
+            Token.IMMUNITY -> {
+                player.tokens.remove(Token.IMMUNITY)
+                player.isImmuneToTokens = true
+            }
+            Token.EXHAUSTION -> {
+                player.tokens.remove(Token.EXHAUSTION)
+                if (!opponentPlayer.isImmuneToTokens){
+                    ExhaustionTokenUse(opponentPlayer)
+                }
+            }
+            Token.DIRECT_TRANSACTION -> {
+                player.tokens.remove(Token.DIRECT_TRANSACTION)
+                if (!opponentPlayer.isImmuneToTokens){
+                    val directTransactionInfo = DirectTransactionTokenUse(player, opponentPlayer)
+                    if (turnDTO.details.isNullOrEmpty()) {
+                        turnDTO.details = mutableMapOf(
+                            "trans" to directTransactionInfo
+                        )
+                    }
+                    turnDTO.details!!["trans"] = directTransactionInfo
+                }
+            }
+            Token.EXTRA_REFUND -> {
+                player.tokens.remove(Token.EXTRA_REFUND)
+                val refundChips = min(player.spentChips, 3)
+                player.remainChips += refundChips
+                player.spentChips -= refundChips
+                logger.debug { "Session $sessionId: Player $playerId used $token, $refundChips returned from the bank" }
+            }
+            Token.EMBEZZLEMENT -> {
+                player.tokens.remove(Token.EMBEZZLEMENT)
+                if (!opponentPlayer.isImmuneToTokens){
+                    for (opponent in players.values) {
+                        if (opponent == player) continue
+                        if (opponent.spentChips > 0) {
+                            val chipsToTake = min(opponent.spentChips, 1)
+                            opponent.spentChips -= chipsToTake
+                            player.spentChips += chipsToTake
+                            logger.debug { "Session $sessionId: Player $playerId used $token, took $chipsToTake chip from opponent's bank" }
+                        } else {
+                            logger.debug { "Session $sessionId: Player $playerId used $token, but opponent has no chips in bank" }
+                        }
+                    }
+                }
 
-                for (opponent in players.values) {
-                    if (opponent == player)
-                        continue
+            }
+            Token.GENERAL_AUDIT -> {
+                player.tokens.remove(Token.GENERAL_AUDIT)
+                if (!opponentPlayer.isImmuneToTokens){
+                    val opponent = players.values.find { it.playerId != playerId }
+                    if (opponent != null && passCount > 0) {
+                        val auditChips = min(opponent.remainChips, 2)
+                        opponent.remainChips -= auditChips
+                        opponent.spentChips += auditChips
+                        logger.debug { "Session $sessionId: Player $playerId used $token, opponent lost $auditChips chips, added to player's bank" }
+                    } else {
+                        logger.debug { "Session $sessionId: Player $playerId used $token, but opponent didn't pass or no opponent found" }
+                    }
+                }
+            }
+            Token.IMPOSTERS_TO_SIX -> {
+                player.tokens.remove(Token.IMPOSTERS_TO_SIX)
+                if (!opponentPlayer.isImmuneToTokens){
+                    impostersToSixActive = true  // Активируем эффект
+                    logger.debug { "Session $sessionId: Player $playerId used $token, all Imposter cards will become 6 at round end" }
+                }
+            }
+            Token.SYLOP_TO_ZERO -> {
+                player.tokens.remove(Token.SYLOP_TO_ZERO)
+                if (!opponentPlayer.isImmuneToTokens){
+                    SylopToZeroActive = true  // Активируем эффект
+                    logger.debug { "Session $sessionId: Player $playerId used $token, all Imposter cards will become 6 at round end" }
+                }
 
-                    val isPaid = pay(opponent, 1)
-                    logger.debug { "Session $sessionId: Player $playerId used $token, opponent ${if (isPaid) "paid 1" else "can't pay, nothing happened"}" }
+            }
+            Token.COOK_THE_BOOKS -> {
+                player.tokens.remove(Token.COOK_THE_BOOKS)
+                if (!opponentPlayer.isImmuneToTokens){
+                    isCookTheBooksActive = true // Активируем эффект
+                    logger.debug { "Session $sessionId: Player $playerId used $token, card ranks are now inverted until end of round" }
+                }
+            }
+            Token.EMBARGO -> {
+                player.tokens.remove(Token.EMBARGO)
+                if (!opponentPlayer.isImmuneToTokens){
+                    skipNextPlayer = true
+                    logger.debug { "Session $sessionId: Player $playerId used $token, next player will be forced to skip" }
                 }
             }
         }
+
+        logger.debug { "Session $sessionId: Player $playerId used $token" }
 
         gameMessageExchanger.sendAcceptedTurn(turnDTO, this)
         waitingForMoveType = listOf(
@@ -375,11 +482,41 @@ class GameSession(
         waitingForMoveType = initWaitingForMoveType()
         cardPrice = 1
 
+        // ВАЖНО: сбрасываем skipNextPlayer при ЛЮБОМ переходе хода
+        val shouldSkipNextPlayer = skipNextPlayer
+        skipNextPlayer = false  // Сбрасываем сразу
+
+        // Проверяем, нужно ли пропустить следующего игрока
+        if (shouldSkipNextPlayer) {
+            if (playersIter.hasNext()) {
+                val skippedPlayerId = playersIter.next()
+                logger.debug { "Session $sessionId: Player $skippedPlayerId was forced to skip by token" }
+
+                // Используем существующую логику пропуска через функцию pass
+                val forcedPassTurn = TurnDto(
+                    sessionId,
+                    skippedPlayerId,
+                    TurnType.PASS,
+                    mutableMapOf("forced" to true)  // Отмечаем как принудительный
+                )
+
+                // Отправляем уведомление о принудительном пропуске
+                gameMessageExchanger.sendAcceptedTurn(forcedPassTurn, this)
+
+                // Вызываем pass для обработки пропуска
+                pass(forcedPassTurn)
+                return  // Выходим, так как pass уже вызовет nextState()
+            }
+        }
+
         if (playersIter.hasNext()) {
             currentPlayerId = playersIter.next()
+            players[currentPlayerId]!!.isImmuneToTokens = false // убираем иммунитет 2-му игроку
             logger.debug { "Session $sessionId: Player $currentPlayerId is the current player" }
         }
         else {
+            playersIter = players.keys.iterator()
+            players[playersIter.next()]!!.isImmuneToTokens = false // убираем иммунитет 1-му игроку
             logger.debug { "Session $sessionId: Turn $turn is over" }
             nextTurn()
         }
@@ -433,6 +570,22 @@ class GameSession(
     }
 
     private fun replaceImposterCard(turnDTO: TurnDto?, cards: MutableList<Card>) {
+        if (impostersToSixActive) {
+            val imposterCard = cards.removeLast()
+            val valueCard = Card.ValueCard(6)  // Всегда 6
+            cards.add(valueCard)
+
+            logger.debug { "Session $sessionId: Player $currentPlayerId Imposter card automatically replaced by 6 due to token" }
+
+            // Переходим к следующему Самозванцу
+            CompletableFuture.runAsync {
+                TimeUnit.SECONDS.sleep(1)
+                processImposterCard()
+            }
+            return
+        }
+
+
         if (turnDTO == null) {
             dice = arrayOf(
                 (1..6).random(),
@@ -450,7 +603,7 @@ class GameSession(
                     sessionId,
                     currentPlayerId,
                     TurnType.AWAITING_DICE,
-                    mapOf(
+                    mutableMapOf(
                         "first" to dice!![0],
                         "second" to dice!![1]
                     )
@@ -486,16 +639,23 @@ class GameSession(
             logger.debug { "Session $sessionId: Round $round. Player ${player.playerId} has hand rating of ${player.handRating}" }
         }
 
-        val playersSortedByRating = players.values.sortedWith(compareBy(
-            { it.handRating!!.first },
-            { it.handRating!!.second }
-        ))
+        // ПРОСТАЯ ЛОГИКА СОРТИРОВКИ
+        val playersSortedByRating = if (isCookTheBooksActive) {
+            // При COOK_THE_BOOKS: инвертируем порядок - лучшая рука становится худшей и наоборот
+            players.values.sortedWith(compareByDescending<Player> { it.handRating!!.first }
+                .thenByDescending { it.handRating!!.second })
+        } else {
+            // Обычная логика: сначала по разнице (меньше лучше), потом по силе (меньше лучше)
+            players.values.sortedWith(compareBy(
+                { it.handRating!!.first },
+                { it.handRating!!.second }
+            ))
+        }
 
         // Collect taxes
         val winner = playersSortedByRating.first()
         val winnerId = players.keys.find { players[it] == winner }!!
         winner.remainChips += winner.spentChips
-        forcePay(winner, winner.handRating!!.first)
 
         logger.debug { "Session $sessionId: Round $round. Winner is Player ${winner.playerId}. He is paying ${winner.handRating!!.first}" }
 
@@ -536,28 +696,33 @@ class GameSession(
             }
         }
     }
-
     // Difference and strength of hand
     private fun rateHand(sandCard: Card, bloodCard: Card): Pair<Int, Int> {
-        if (sandCard is Card.SylopCard &&
-            bloodCard is Card.SylopCard)
+        // Если активен токен Sylop=0, считаем Sylop как 0
+        if (SylopToZeroActive) {
+            val sandValue = if (sandCard is Card.SylopCard) 0 else (sandCard as Card.ValueCard).value
+            val bloodValue = if (bloodCard is Card.SylopCard) 0 else (bloodCard as Card.ValueCard).value
+
+            val difference = Math.abs(bloodValue - sandValue)
+            val strength = Math.max(bloodValue, sandValue)
+            return Pair(difference, strength)
+        }
+
+        // Старая логика (без токена)
+        if (sandCard is Card.SylopCard && bloodCard is Card.SylopCard)
             return Pair(0, 0)
-
-        if (sandCard is Card.SylopCard &&
-            bloodCard is Card.ValueCard) {
+        if (sandCard is Card.SylopCard && bloodCard is Card.ValueCard)
             return Pair(0, bloodCard.value)
-        }
-
-        if (bloodCard is Card.SylopCard &&
-            sandCard is Card.ValueCard) {
+        if (bloodCard is Card.SylopCard && sandCard is Card.ValueCard)
             return Pair(0, sandCard.value)
-        }
 
-        val bloodCardCast = bloodCard as Card.ValueCard
-        val sandCardCast = sandCard as Card.ValueCard
+        // Обе карты числовые
+        val sandValue = (sandCard as Card.ValueCard).value
+        val bloodValue = (bloodCard as Card.ValueCard).value
 
-        val difference = Math.abs(bloodCardCast.value - sandCardCast.value)
-        return Pair(difference, Math.max(bloodCardCast.value, sandCardCast.value))
+        val difference = Math.abs(bloodValue - sandValue)
+        val strength = Math.max(bloodValue, sandValue)
+        return Pair(difference, strength)
     }
 
     private fun nextRound() {
@@ -567,6 +732,12 @@ class GameSession(
         currentPlayerId = playersIter.next()
         passCount = 0
 
+        impostersToSixActive = false
+        SylopToZeroActive = false
+        isCookTheBooksActive = false
+
+        // Сбрасываем состояния паса для всех игроков
+        players.values.forEach { it.isInPassState = false }
         logger.debug { "Session $sessionId: Starting next round. Round $round" }
 
         start()
@@ -585,5 +756,68 @@ class GameSession(
         val affordablePrice = Math.min(price, player.remainChips)
         player.remainChips -= affordablePrice
         player.spentChips += affordablePrice
+    }
+
+    // Функции реализации жетонов
+    private fun NoTaxTokenUse(player : Player){
+        cardPrice = 0
+    }
+
+    private fun TakeTwoChipsTokenUse(player : Player) {
+        val minChips = min(player.spentChips, 2)
+        player.remainChips += minChips
+        player.spentChips -= minChips
+    }
+
+    private fun AnotherPlayerPayOneTokenUse(player : Player) {
+        for (opponent in players.values) {
+            if (opponent == player)
+                continue
+
+            val isPaid = pay(opponent, 1)
+        }
+    }
+
+    private fun ExhaustionTokenUse(opponentPlayer: Player) {
+        var bloodcard = opponentPlayer.bloodCards.removeLast()
+        var sandCard = opponentPlayer.sandCards.removeLast()
+
+        board.bloodDiscardDeck.add(bloodcard)
+        board.sandDiscardDeck.add(sandCard)
+
+        opponentPlayer.bloodCards.add(board.bloodDeck.removeLast())
+        opponentPlayer.sandCards.add(board.sandDeck.removeLast())
+    }
+
+    private fun DirectTransactionTokenUse(player: Player, opponentPlayer: Player) : DirectTransactionInfo {
+        var playerBloodCard = player.bloodCards.removeLast()
+        var playerSandCard = player.sandCards.removeLast()
+        var opponentPlayerBloodCard = opponentPlayer.bloodCards.removeLast()
+        var opponentPlayerSandCard = opponentPlayer.sandCards.removeLast()
+
+        player.bloodCards.add(opponentPlayerBloodCard)
+        player.sandCards.add(opponentPlayerSandCard)
+        opponentPlayer.bloodCards.add(playerBloodCard)
+        opponentPlayer.sandCards.add(playerSandCard)
+
+        return DirectTransactionInfo(player, opponentPlayer)
+    }
+
+    private fun requestTokenSelection(playerId: Long) {
+        val player = players[playerId]!!
+        val availableTokens = player.tokens.map { it.name }
+
+        logger.debug { "Session $sessionId: Player $playerId must choose a token" }
+
+        gameMessageExchanger.sendAcceptedTurn(
+            TurnDto(
+                sessionId,
+                playerId,
+                TurnType.SELECT_TOKEN,
+                mutableMapOf("availableTokens" to availableTokens)
+            ), this
+        )
+
+        waitingForMoveType = listOf(TurnType.PLAY_TOKEN)
     }
 }
