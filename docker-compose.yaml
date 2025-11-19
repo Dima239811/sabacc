@@ -16,6 +16,7 @@ services:
     restart: always
 
   backend:
+    image: dima429/sabacc-main-backend:latest
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -38,6 +39,7 @@ services:
     restart: always
 
   frontend:
+    image: dima429/sabacc-main-frontend:latest
     build:
       context: ./frontend
       dockerfile: Dockerfile
