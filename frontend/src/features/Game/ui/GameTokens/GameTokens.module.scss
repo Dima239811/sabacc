@@ -1,13 +1,16 @@
 .controlsContainer {
   display: flex;
   justify-content: center;
-  gap: 16px;
-  height: 84px;
+  gap: 4px;
+  height: 170px;
 }
 
 .cardButton {
   background: none;
   border: none;
+  padding: 0;
+  display: flex;
+  align-items: center;
   filter: contrast(1.5);
 }
 
@@ -18,4 +21,12 @@
   &:hover {
     opacity: 0.8;
   }
+}
+
+
+.cardButton img {
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+  filter: contrast(1.5);
 }

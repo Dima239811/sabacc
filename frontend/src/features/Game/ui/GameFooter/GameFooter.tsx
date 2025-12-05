@@ -19,10 +19,14 @@ interface GameFooterProps {
   gameState: GameState;
   sendTurn: any;
   leaveCurrentRoom: any;
+  selectedTokens: TokenType[];
 }
 
 export const GameFooter = memo((props: GameFooterProps) => {
   const { user, isCurentTurn, gameState, sendTurn, leaveCurrentRoom, ...otherProps } = props;
+
+  console.log('[GameFooter] selectedTokens prop:', props.selectedTokens);
+
   const i = gameState?.players[0].playerId == user?.id ? 0 : 1;
   const navigate = useNavigate()
 
@@ -55,7 +59,11 @@ export const GameFooter = memo((props: GameFooterProps) => {
       </div>
 
       <div className={cls.controls}>
-        <GameTokens userId={user?.id} tokens={gameState.players[i].tokens} isClickable sendTurn={sendTurn} />
+        <GameTokens
+        userId={user?.id}
+        selectedTokens={props.selectedTokens}
+        isClickable sendTurn={sendTurn}
+        />
       </div>
 
       <button className={cls.button} onClick={handleLeaveGame}><img src={GiveUpmg} alt="" /></button>

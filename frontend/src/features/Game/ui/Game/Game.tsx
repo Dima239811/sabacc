@@ -18,6 +18,8 @@ import { useNavigate } from 'react-router-dom';
 import { getRouteMain } from '@/shared/const/router';
 import { GameTable } from '../GameTable/GameTable';
 
+
+
 interface GameProps {
   client: Client;
   gameState: GameState;
@@ -28,6 +30,8 @@ interface GameProps {
   roundResult: any | null;
   leaveCurrentRoom: any;
   fetchGameState: any;
+
+  myTokens: TokensTypes[];
 }
 
 export const Game = memo(({
@@ -39,11 +43,14 @@ export const Game = memo(({
   winnerId,
   roundResult,
   leaveCurrentRoom,
-  fetchGameState
+  fetchGameState,
+  myTokens
 }: GameProps) => {
   const user = useSelector(selectCurrentUser);
   const opponent = useOpponent(user?.id, roomState);
   const navigate = useNavigate();
+
+  console.log('[Game] myTokens prop:', myTokens);
 
   const [modalCards, setModalCards] = useState<{ cards: Card[], type: GameCardType } | null>(null);
 
@@ -151,6 +158,7 @@ export const Game = memo(({
           opponent={opponent}
           isCurentTurn={opponent?.id === gameState.currentPlayerId}
           gameState={gameState}
+          selectedTokens={myTokens}
         />
 
         <GameTable
@@ -165,6 +173,7 @@ export const Game = memo(({
           gameState={gameState}
           sendTurn={sendTurn}
           leaveCurrentRoom={leaveCurrentRoom}
+          selectedTokens={myTokens}
         />
       </div>
     </>

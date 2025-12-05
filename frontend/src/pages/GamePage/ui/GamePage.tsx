@@ -5,7 +5,7 @@ import { useGameState } from '@/features/Game/model/hooks/useGameState';
 import { useEffect } from 'react';
 
 import React, { useState } from "react";
-import { TokenType } from "@/shared/ui/TokenModal";
+import { TokensTypes } from "../features/Game/model/types/game.ts";
 import { GameStatus } from "@/features/Game/model/types/game";
 
 const GamePage = () => {
@@ -44,13 +44,9 @@ const GamePage = () => {
     loader = <div className={classNames(cls.loader, {}, [])}>Ожидание соперника...</div>;
   }
 
-  const availableTokens: TokenType[] = [
-    "NO_TAX",
-    "TAKE_TWO_CHIPS",
-    "OTHER_PLAYERS_PAY_ONE",
-  ];
 
-  const [myTokens, setMyTokens] = useState<TokenType[]>([]);
+
+  const [myTokens, setMyTokens] = useState<TokensTypes[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [gameStatus, setGameStatus] = useState<GameStatus>(GameStatus.WAITING_SECOND_USER);
   const [flippedTokens, setFlippedTokens] = useState<string[]>([]);
@@ -65,10 +61,16 @@ const GamePage = () => {
     }
   }, [gameStatus, myTokens.length]);
 
-  const handleSelectTokens = (tokens: TokenType[]) => {
+  const handleSelectTokens = (tokens: TokensTypes[]) => {
     setMyTokens(tokens);
     setIsModalOpen(false);
     console.log("Выбраны жетоны:", tokens);
+    if (client) {
+      client.send(JSON.stringify({
+        action: "SELECT_TOKENS",
+        payload: { tokens }
+      }));
+    }
   };
 
   // Пример имитации изменения статуса игры (на практике приходит от сервера)
@@ -88,6 +90,12 @@ const GamePage = () => {
         : [...prev, tokenId]
     );
   };
+
+
+  useEffect(() => {
+    console.log('[GamePage] myTokens updated:', myTokens);
+  }, [myTokens]);
+
 
   const handleIconClick = (tokenId: string, e: React.MouseEvent) => {
     e.stopPropagation(); // Останавливаем всплытие, чтобы карточка не переворачивалась
@@ -151,6 +159,9 @@ const GamePage = () => {
           roundResult={roundResult}
           leaveCurrentRoom={leaveCurrentRoom}
           fetchGameState={fetchGameState}
+
+          myTokens={myTokens}
+          userId={client?.userId}
         />
       )}
 
@@ -166,7 +177,7 @@ const GamePage = () => {
               <div className={cls.selectionCounter}>
                 Выбрано: {myTokens.length}/3
               </div>
-              <button className={cls.closeButton} onClick={() => setIsModalOpen(false)}>×</button>
+
             </div>
 
             <div className={cls.tokensGrid}>
@@ -212,7 +223,7 @@ const GamePage = () => {
               <button
                 className={cls.confirmButton}
                 onClick={() => setIsModalOpen(false)}
-                disabled={myTokens.length === 0}
+                disabled={myTokens.length != 3}
               >
                 Подтвердить выбор ({myTokens.length}/3)
               </button>
@@ -221,16 +232,7 @@ const GamePage = () => {
         </div>
       )}
 
-      {myTokens.length > 0 && (
-        <div>
-          <h2>Ваши жетоны:</h2>
-          <ul>
-            {myTokens.map((t) => (
-              <li key={t}>{t}</li>
-            ))}
-          </ul>
-        </div>
-      )}
+
     </div>
   );
 };

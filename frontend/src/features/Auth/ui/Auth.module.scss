@@ -6,20 +6,31 @@
 }
 
 .modal {
-  min-width: 650px;
-  height: 400px;
+  min-width: 480px;
+  //height: 400px;
+  height: auto;
   display: flex;
   flex-direction: column;
   align-items: center;
   color: #FFFFFF;
   background-color: #0A193A;
-  padding: 40px 30px 20px 30px;
+  padding: 30px 20px 40px 20px;
   border-radius: var(--radius-l);
   font: var(--font-s);
   border: 2px solid #FFFFFF;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.7);
-  gap: 40px;
+  gap: 12px;
   margin-top: 40px;
+  //min-height: 180px;
+
+
+  position: fixed;
+  top: 50%;
+   left: 50%;
+   transform: translate(-50%, -50%);
+  justify-content: center;
+  z-index: 1000;
+
 }
 
 .title {
@@ -27,6 +38,7 @@
   font-size: 28px;
   color: #FFFFFF;
   margin-bottom: 10px;
+  font-weight: 400;
 }
 
 .inputWrapper {
@@ -34,20 +46,20 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 50px;
+  gap: 30px;
   width: 100%;
 }
 
 .input {
   outline: none;
   width: 75%;
-  height: 80px;
+  height: 60px;
   color: #FFFFFF;
   background-color: #0A193A;
   padding: 10px 15px;
   border: 1px solid #FFFFFF;
   border-radius: 40px;
-  font-size: 30px;
+  font-size: 20px;
   text-align: center;
 
   &::placeholder {
@@ -58,12 +70,12 @@
 
 .goToGame {
   width: 70%;
-  height: 70px;
+  height: 60px;
   background: linear-gradient(to right, #6073A0, #0A193A);
   border: 2px solid #FFFFFF;
   border-radius: 35px;
   color: #FFFFFF;
-  font-size: 22px;
+  font-size: 20px;
   font-weight: bold;
   text-transform: uppercase;
   padding: 12px 25px;
@@ -80,9 +92,9 @@
 .error {
   color: #FF6B6B;
   position: absolute;
-  bottom: -60px;
+  bottom: -40px;
   left: 0;
-  font-size: 20px;
+  font-size: 16px;
   font-weight: 500;
   background-color: transparent;
   text-align: center;

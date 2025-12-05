@@ -12,6 +12,7 @@ interface GameHeaderProps {
   gameState: GameState;
   opponent: User | null;
   isCurentTurn: boolean;
+  selectedTokens: TokenType[];
 }
 
 export const GameHeader = memo((props: GameHeaderProps) => {
@@ -40,7 +41,10 @@ export const GameHeader = memo((props: GameHeaderProps) => {
       </div>
 
       <div className={cls.controls}>
-        <GameTokens userId={opponent?.id} tokens={gameState.players[i].tokens} />
+        <GameTokens
+        userId={opponent?.id}
+        selectedTokens={gameState.players[i].selectedTokens || []}
+        />
       </div>
 
 
