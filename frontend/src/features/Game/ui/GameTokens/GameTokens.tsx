@@ -24,6 +24,7 @@ interface GameTokensProps {
   selectedTokens: TokensTypes[];
   isClickable?: boolean;
   sendTurn?: (action: string, payload: { token: TokensTypes }) => void;
+  onPlayToken?: (token: TokensTypes) => void;
 }
 
 const tokenData = [
@@ -61,59 +62,46 @@ const tokenNameToEnum: Record<string, TokensTypes> = {
 
 
 export const GameTokens = memo((props: GameTokensProps) => {
-  const { userId, selectedTokens, sendTurn, isClickable = false } = props;
+  const { userId, selectedTokens, sendTurn, onPlayToken, isClickable = false } = props;
 
   if (!userId) return <div />;
 
   const tokensToRender: TokensTypes[] = Array.isArray(selectedTokens) ? selectedTokens.slice(0, 3) : [];
 
-  const handleTurnToken = (russianName: string) => {
-    console.log("[TOKEN CLICKED] Русское название:", russianName);
-
-    const enumValue = tokenNameToEnum[russianName];
-
+ const handleTurnToken = (ruName: string) => {
+    const enumValue = tokenNameToEnum[ruName];
     if (!enumValue) {
-      console.error("[TOKEN ERROR] Нет соответствия для токена:", russianName);
+      console.error("Нет соответствующего enum для токена:", ruName);
       return;
     }
 
-    console.log("[TOKEN ENUM] Отправляем enum:", enumValue);
+    // локальное обновление
+    onPlayToken?.(enumValue);
 
-    if (!sendTurn) {
-      console.error("[TOKEN ERROR] sendTurn не передан!");
-      return;
-    }
-
-    console.log("[TOKEN SEND] Вызываем sendTurn('PLAY_TOKEN', { token:", enumValue, "})");
-
-    sendTurn("PLAY_TOKEN", { token: enumValue });
-
+    // отправка хода
+    sendTurn?.("PLAY_TOKEN", { token: enumValue });
   };
-
-
 
   const getImageByType = (type: TokensTypes) => {
     const found = tokenData.find(t => t.type === type);
-    console.log("type: " + type)
-    return found?.image;
+    return found ? found.image : null;
   };
 
   return (
     <div className={classNames(cls.controlsContainer, {}, [])}>
       {tokensToRender.map((type) => {
         const image = getImageByType(type);
-        if (!image) {
-            console.log("картинки нет для жетона "+ type.TokensTypes);
-            return null; // не рендерим, если картинки нет
-            }
+        if (!image) return null;
         return (
           <button
-            key={type}
+            key={String(type)}
             className={classNames(cls.cardButton, { [cls.clickable]: isClickable }, [])}
             onClick={() => handleTurnToken(type)}
             type="button"
+            aria-label={`token-${String(type)}`}
+            title={String(type)}
           >
-            <img src={image} alt={`Token`} />
+            <img src={image} alt={`Token ${String(type)}`} />
           </button>
         );
       })}

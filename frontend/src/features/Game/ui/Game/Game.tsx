@@ -17,6 +17,7 @@ import { GameResultModal } from '../GameResultModal/GameResultModal';
 import { useNavigate } from 'react-router-dom';
 import { getRouteMain } from '@/shared/const/router';
 import { GameTable } from '../GameTable/GameTable';
+import { TokensTypes } from '../../model/types/game';
 
 
 
@@ -32,6 +33,8 @@ interface GameProps {
   fetchGameState: any;
 
   myTokens: TokensTypes[];
+  userId?: number;
+  onPlayToken?: (token: TokensTypes) => void;
 }
 
 export const Game = memo(({
@@ -44,7 +47,9 @@ export const Game = memo(({
   roundResult,
   leaveCurrentRoom,
   fetchGameState,
-  myTokens
+  myTokens,
+  userId,
+  onPlayToken
 }: GameProps) => {
   const user = useSelector(selectCurrentUser);
   const opponent = useOpponent(user?.id, roomState);
@@ -54,6 +59,7 @@ export const Game = memo(({
   const [playerTokens, setPlayerTokens] = useState<string[]>();
 
 
+const playerIndex = gameState.players[0].playerId === user?.id ? 0 : 1;
 
   console.log('[Game] myTokens prop:', myTokens);
 
@@ -77,6 +83,30 @@ export const Game = memo(({
       });
     }
   }, [client, user, roomState]);
+
+
+
+
+ const handlePlayToken = useCallback((token: TokensTypes) => {
+   console.log('[Game] play token:', token);
+
+   // Передаем на верхний уровень для обновления состояния
+   onPlayToken?.(token);
+
+   // Отправка хода на сервер
+   if (client && user) {
+     client.publish({
+       destination: `/app/input/session/${roomState.id}/turn`,
+       body: JSON.stringify({
+         sessionId: roomState.id,
+         playerId: user.id,
+         turnType: 'PLAY_TOKEN',
+         details: { token },
+       }),
+     });
+   }
+ }, [client, roomState, user?.id, onPlayToken]);
+
 
 
 
@@ -177,7 +207,7 @@ useEffect(() => {
           opponent={opponent}
           isCurentTurn={opponent?.id === gameState.currentPlayerId}
           gameState={gameState}
-          selectedTokens={myTokens}
+          selectedTokens={opponent?.id === user?.id ? myTokens : gameState.players[playerIndex].selectedTokens || []}
         />
 
         <GameTable
@@ -193,6 +223,7 @@ useEffect(() => {
           sendTurn={sendTurn}
           leaveCurrentRoom={leaveCurrentRoom}
           selectedTokens={myTokens}
+          onPlayToken={handlePlayToken}
         />
       </div>
     </>

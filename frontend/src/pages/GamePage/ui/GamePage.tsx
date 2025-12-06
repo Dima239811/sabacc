@@ -2,9 +2,8 @@ import { classNames } from '@/shared/lib/classNames/classNames';
 import cls from './GamePage.module.scss';
 import { Game } from '@/features/Game';
 import { useGameState } from '@/features/Game/model/hooks/useGameState';
-import { useEffect } from 'react';
 
-import React, { useState } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { TokensTypes } from "../features/Game/model/types/game.ts";
 import { GameStatus } from "@/features/Game/model/types/game";
 
@@ -47,19 +46,37 @@ const GamePage = () => {
 
 
   const [myTokens, setMyTokens] = useState<TokensTypes[]>([]);
+  const [hasSelectedTokens, setHasSelectedTokens] = useState<boolean>(false);
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [gameStatus, setGameStatus] = useState<GameStatus>(GameStatus.WAITING_SECOND_USER);
   const [flippedTokens, setFlippedTokens] = useState<string[]>([]);
 
+
+    useEffect(() => {
+        if (!gameState || !client) return;
+        const myUserId = client?.userId;
+        if (typeof myUserId === 'undefined') return;
+
+        const myPlayer = gameState.players.find(p => p.playerId === myUserId);
+        if (myPlayer && Array.isArray(myPlayer.tokens) && myPlayer.tokens.length > 0) {
+          // предполагается, что gameState.players[].tokens уже содержит значения типа TokensTypes (строки enum)
+          setMyTokens(myPlayer.tokens as TokensTypes[]);
+          setHasSelectedTokens(true);
+          setIsModalOpen(false); // закрываем окно выбора если оно вдруг открылось
+        }
+      }, [gameState, client]);
+
   // Открываем модальное окно выбора жетонов, когда оба игрока подключены
   useEffect(() => {
     if (
-      (gameStatus === GameStatus.ALL_USERS_JOINED || gameStatus === GameStatus.ALL_USERS_CONNECTED) &&
-      myTokens.length === 0
+      !hasSelectedTokens &&
+      (gameStatus === GameStatus.ALL_USERS_JOINED ||
+       gameStatus === GameStatus.ALL_USERS_CONNECTED)
     ) {
       setIsModalOpen(true);
     }
-  }, [gameStatus, myTokens.length]);
+  }, [gameStatus, hasSelectedTokens]);
 
   const handleSelectTokens = (tokens: TokensTypes[]) => {
     setMyTokens(tokens);
@@ -72,6 +89,32 @@ const GamePage = () => {
       }));
     }
   };
+
+
+
+  const handlePlayToken = useCallback((token: TokensTypes) => {
+      // оптимистично удаляем жетон из локального состояния
+      setMyTokens(prev => prev.filter(t => t !== token));
+
+      // отправляем событие на сервер (сервер должен удалить токен у игрока и разослать обновлённый gameState)
+      if (client) {
+        client.publish
+          ? client.publish({
+              destination: `/app/input/session/${roomState!.id}/turn`,
+              body: JSON.stringify({
+                sessionId: roomState!.id,
+                playerId: client?.userId, // возможно у вас другой способ
+                turnType: 'PLAY_TOKEN',
+                details: { token }
+              }),
+            })
+          : client.send(JSON.stringify({
+              action: "PLAY_TOKEN",
+              payload: { token }
+            }));
+      }
+    }, [client, roomState]);
+
 
   // Пример имитации изменения статуса игры (на практике приходит от сервера)
   useEffect(() => {
@@ -93,8 +136,8 @@ const GamePage = () => {
 
 
   useEffect(() => {
-    console.log('[GamePage] myTokens updated:', myTokens);
-  }, [myTokens]);
+      console.log('[GamePage] myTokens updated:', myTokens, 'hasSelectedTokens:', hasSelectedTokens);
+    }, [myTokens, hasSelectedTokens]);
 
 
   const handleIconClick = (tokenId: string, e: React.MouseEvent) => {
@@ -113,6 +156,8 @@ const GamePage = () => {
       }
     }
   };
+
+
 
   const tokenData = [
     {
@@ -162,6 +207,7 @@ const GamePage = () => {
 
           myTokens={myTokens}
           userId={client?.userId}
+          onPlayToken={handlePlayToken}
         />
       )}
 

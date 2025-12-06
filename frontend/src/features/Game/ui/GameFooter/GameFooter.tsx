@@ -20,10 +20,11 @@ interface GameFooterProps {
   sendTurn: any;
   leaveCurrentRoom: any;
   selectedTokens: TokenType[];
+  onPlayToken?: (token: any) => void;
 }
 
 export const GameFooter = memo((props: GameFooterProps) => {
-  const { user, isCurentTurn, gameState, sendTurn, leaveCurrentRoom, ...otherProps } = props;
+  const { user, isCurentTurn, gameState, sendTurn, leaveCurrentRoom, selectedTokens, onPlayToken } = props;
 
   console.log('[GameFooter] selectedTokens prop:', props.selectedTokens);
 
@@ -63,6 +64,7 @@ export const GameFooter = memo((props: GameFooterProps) => {
         userId={user?.id}
         selectedTokens={props.selectedTokens}
         isClickable sendTurn={sendTurn}
+        onPlayToken={onPlayToken}
         />
       </div>
 
