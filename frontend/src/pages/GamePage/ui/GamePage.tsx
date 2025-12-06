@@ -43,7 +43,7 @@ const GamePage = () => {
     loader = <div className={classNames(cls.loader, {}, [])}>Ожидание соперника...</div>;
   }
 
-
+const [usedTokens, setUsedTokens] = useState<TokensTypes[]>([]);
 
   const [myTokens, setMyTokens] = useState<TokensTypes[]>([]);
   const [hasSelectedTokens, setHasSelectedTokens] = useState<boolean>(false);
@@ -54,18 +54,20 @@ const GamePage = () => {
 
 
     useEffect(() => {
-        if (!gameState || !client) return;
-        const myUserId = client?.userId;
-        if (typeof myUserId === 'undefined') return;
+            if (!gameState || !client) return;
+            const myUserId = client?.userId;
+            if (typeof myUserId === 'undefined') return;
 
-        const myPlayer = gameState.players.find(p => p.playerId === myUserId);
-        if (myPlayer && Array.isArray(myPlayer.tokens) && myPlayer.tokens.length > 0) {
-          // предполагается, что gameState.players[].tokens уже содержит значения типа TokensTypes (строки enum)
-          setMyTokens(myPlayer.tokens as TokensTypes[]);
-          setHasSelectedTokens(true);
-          setIsModalOpen(false); // закрываем окно выбора если оно вдруг открылось
-        }
-      }, [gameState, client]);
+            const myPlayer = gameState.players.find(p => p.playerId === myUserId);
+            if (myPlayer && Array.isArray(myPlayer.tokens) && myPlayer.tokens.length > 0) {
+              // предполагается, что gameState.players[].tokens уже содержит значения типа TokensTypes (строки enum)
+              setMyTokens(myPlayer.tokens as TokensTypes[]);
+              setHasSelectedTokens(true);
+              setIsModalOpen(false); // закрываем окно выбора если оно вдруг открылось
+            }
+          }, [gameState, client]);
+
+
 
   // Открываем модальное окно выбора жетонов, когда оба игрока подключены
   useEffect(() => {
@@ -93,8 +95,17 @@ const GamePage = () => {
 
 
   const handlePlayToken = useCallback((token: TokensTypes) => {
+
+      if (usedTokens.includes(token)) {
+          alert('Этот жетон уже был использован!');
+          return; // выходим, чтобы не отправлять повторно
+        }
+
       // оптимистично удаляем жетон из локального состояния
-      setMyTokens(prev => prev.filter(t => t !== token));
+      setUsedTokens(prev => [...prev, token]);
+
+
+
 
       // отправляем событие на сервер (сервер должен удалить токен у игрока и разослать обновлённый gameState)
       if (client) {
@@ -183,104 +194,104 @@ const GamePage = () => {
   ];
 
   return (
-    <div className={classNames(cls.game, {}, [])}>
-      {/* Отображаем ID комнаты, если он есть */}
-      {roomState?.id && (
-        <div className={cls.roomId}>
-          ID Комнаты: {roomState.id}
-        </div>
-      )}
+      <div className={classNames(cls.game, {}, [])}>
+        {/* Отображаем ID комнаты, если он есть */}
+        {roomState?.id && (
+          <div className={cls.roomId}>
+            ID Комнаты: {roomState.id}
+          </div>
+        )}
 
-      {loader ? (
-        loader
-      ) : (
-        <Game
-          client={client}
-          gameState={gameState}
-          roomState={roomState}
-          diceDetails={diceDetails}
-          handleDiceSelection={handleDiceSelection}
-          winnerId={winnerId}
-          roundResult={roundResult}
-          leaveCurrentRoom={leaveCurrentRoom}
-          fetchGameState={fetchGameState}
+        {loader ? (
+          loader
+        ) : (
+          <Game
+            client={client}
+            gameState={gameState}
+            roomState={roomState}
+            diceDetails={diceDetails}
+            handleDiceSelection={handleDiceSelection}
+            winnerId={winnerId}
+            roundResult={roundResult}
+            leaveCurrentRoom={leaveCurrentRoom}
+            fetchGameState={fetchGameState}
 
-          myTokens={myTokens}
-          userId={client?.userId}
-          onPlayToken={handlePlayToken}
-        />
-      )}
+            myTokens={myTokens.filter(t => !usedTokens.includes(t))}
+            userId={client?.userId}
+            onPlayToken={handlePlayToken}
+          />
+        )}
 
 
 
-      {gameStatus === GameStatus.WAITING_SECOND_USER && <p>Поиск противника...</p>}
+        {gameStatus === GameStatus.WAITING_SECOND_USER && <p>Поиск противника...</p>}
 
-      {isModalOpen && (
-        <div className={cls.modalOverlay}>
-          <div className={cls.tokenModal}>
-            <div className={cls.modalHeader}>
-              <h2>Выберите жетоны для игры</h2>
-              <div className={cls.selectionCounter}>
-                Выбрано: {myTokens.length}/3
+        {isModalOpen && (
+          <div className={cls.modalOverlay}>
+            <div className={cls.tokenModal}>
+              <div className={cls.modalHeader}>
+                <h2>Выберите жетоны для игры</h2>
+                <div className={cls.selectionCounter}>
+                  Выбрано: {myTokens.length}/3
+                </div>
+
               </div>
 
-            </div>
-
-            <div className={cls.tokensGrid}>
-              {tokenData.map((token) => (
-                <div
-                  key={token.id}
-                  className={classNames(cls.tokenCard, { [cls.flipped]: flippedTokens.includes(token.id) })}
-                  onClick={() => handleCardClick(token.id)}
-                >
-                  <div className={cls.tokenCardInner}>
-                    {/* Лицевая сторона */}
-                    <div className={cls.tokenCardFront}>
-                      <img src={token.frontImage} alt={token.name} />
-                      <div className={cls.tokenName}>{token.name}</div>
-                      <div
-                        className={cls.tokenIcon}
-                        onClick={(e) => handleIconClick(token.id, e)}
-                      >
-                        {myTokens.includes(token.id) ? '🗑' : '➕'}
+              <div className={cls.tokensGrid}>
+                {tokenData.map((token) => (
+                  <div
+                    key={token.id}
+                    className={classNames(cls.tokenCard, { [cls.flipped]: flippedTokens.includes(token.id) })}
+                    onClick={() => handleCardClick(token.id)}
+                  >
+                    <div className={cls.tokenCardInner}>
+                      {/* Лицевая сторона */}
+                      <div className={cls.tokenCardFront}>
+                        <img src={token.frontImage} alt={token.name} />
+                        <div className={cls.tokenName}>{token.name}</div>
+                        <div
+                          className={cls.tokenIcon}
+                          onClick={(e) => handleIconClick(token.id, e)}
+                        >
+                          {myTokens.includes(token.id) ? '🗑' : '➕'}
+                        </div>
                       </div>
-                    </div>
 
-                    {/* Обратная сторона */}
-                    <div className={cls.tokenCardBack}>
-                      <img src={token.frontImage} alt={token.name} />
-                      <div className={cls.tokenDescription}>
+                      {/* Обратная сторона */}
+                      <div className={cls.tokenCardBack}>
+                        <img src={token.frontImage} alt={token.name} />
+                        <div className={cls.tokenDescription}>
 
-                        <p>{token.description}</p>
-                      </div>
-                      <div
-                        className={cls.tokenIcon}
-                        onClick={(e) => handleIconClick(token.id, e)}
-                      >
-                        {myTokens.includes(token.id) ? '🗑' : '➕'}
+                          <p>{token.description}</p>
+                        </div>
+                        <div
+                          className={cls.tokenIcon}
+                          onClick={(e) => handleIconClick(token.id, e)}
+                        >
+                          {myTokens.includes(token.id) ? '🗑' : '➕'}
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
 
-            <div className={cls.modalActions}>
-              <button
-                className={cls.confirmButton}
-                onClick={() => setIsModalOpen(false)}
-                disabled={myTokens.length != 3}
-              >
-                Подтвердить выбор ({myTokens.length}/3)
-              </button>
+              <div className={cls.modalActions}>
+                <button
+                  className={cls.confirmButton}
+                  onClick={() => setIsModalOpen(false)}
+                  disabled={myTokens.length != 3}
+                >
+                  Подтвердить выбор ({myTokens.length}/3)
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
 
-    </div>
-  );
-};
+      </div>
+    );
+  };
 
 export default GamePage;
