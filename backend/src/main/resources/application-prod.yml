@@ -1,15 +1,39 @@
 server:
-  host: "103.90.75.122:88"
+  host: "95.79.225.7"
   protocol: "http"
+
+websocket:
+  logging: true
+  stomp:
+    endpoint: "/ws"
+    allowed-origin:
+      - "http://95.79.225.7"
+      - "http://localhost:5173"
+      - "http://localhost"
+    allowed-origin-patterns:
+      - "*"
+    sock-js-enabled: true
+  game:
+    endpoint: "/game"
+    allowed-origin:
+      - "http://95.79.225.7"
+      - "http://localhost:5173"
+      - "http://localhost"
+    allowed-origin-patterns:
+      - "*"
+    sock-js-enabled: true
+  broker:
+    destination-prefixes:
+      - "/topic"
+      - "/queue"
+      - "/input"
+    application-destination-prefixes:
+      - "/app"
+    user-destination-prefixes: "/user"
 
 security:
   cors:
-    allowed-origin:
-      - http://localhost:5173
-      - ${server.protocol}://${server.host}
-
-websocket:
-  stomp:
-    allowed-origin: "${server.protocol}://${server.host}"
-  game:
-    allowed-origin: "${server.protocol}://${server.host}"
+    allowed-origin-patterns:
+      - "http://localhost:*"
+      - "http://95.79.225.7"
+    allow-credentials: true

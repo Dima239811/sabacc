@@ -1,110 +1,34 @@
 server:
   port: 8080
-#  host: "localhost"
-  protocol: "http"
   host: 0.0.0.0
-
-logging:
-  level:
-    root: INFO
-    ru.ngtu: DEBUG
+  protocol: http
 
 spring:
   application:
     name: sabacc
-
   datasource:
     driver-class-name: org.postgresql.Driver
-#    url: jdbc:postgresql://${spring.datasource.database.host}:${spring.datasource.database.port}/${spring.datasource.database.name}
-#    url: jdbc:postgresql://db:5432/sabacc
-    url: jdbc:postgresql://localhost:5432/sabacc
-#    url: jdbc:postgresql://${SPRING_DATASOURCE_DATABASE_HOST:localhost}:5432/${SPRING_DATASOURCE_DATABASE_NAME:sabacc}
-    password: Dima228*
-    username: postgres
-#    database:
-#      host: postgres
-#      port: 5432
-#      name: sabacc
-
+    url: jdbc:postgresql://${SPRING_DATASOURCE_DATABASE_HOST:postgres}:5432/${SPRING_DATASOURCE_DATABASE_NAME:sabacc}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:postgres}
   jpa:
     open-in-view: false
     hibernate:
       ddl-auto: validate
-
   flyway:
     enabled: true
     validate-migration-naming: false
     out-of-order: true
     baseline-on-migrate: true
 
-  # DevTools для hot reload
-  devtools:
-    restart:
-      enabled: true
-      quiet-period: 1000
-      poll-interval: 2000
-    remote:
-      secret: mysecret
-    livereload:
-      enabled: true
 
-  # Отключение кэша шаблонов для разработки
-  thymeleaf:
-    cache: false
-  freemarker:
-    cache: false
-  groovy:
-    template:
-      cache: false
-  mustache:
-    cache: false
-
-user:
-  expiration-in-hours: 24
-
-#security:
-#  cors:
-#    allowed-origin:  # ← Исправлено на allowed-origins (множественное число)
-##      - "http://localhost:3000"
-#      - "http://localhost:5173"
-##      - "http://192.168.0.102:5173"
-##    allowed-method:
-##      - GET
-##      - POST
-##      - PUT
-##      - DELETE
-##      - OPTIONS
-##    allowed-header: "*"
-#    allow-credential: true
+security:
+  cors:
+    allowed-origin-patterns: ["*"]
+    allow-credentials: true
 
 websocket:
-  logging: true
   stomp:
-    allowed-origin: "http://localhost:5173"  # ← Убраны переменные, т.к. могут не работать
+    allowed-origin-patterns: ["*"]
   game:
-    allowed-origin: "http://localhost:5173"
-  broker:
-    destination-prefixes:
-      - "/topic"
-      - "/queue"
-      - "/input"
-    application-destination-prefixes:
-      - "/app"
-    user-destination-prefixes: "/user"
-
-cron:
-  user-cleanup: "0 */30 * * * *"
-
-management:
-  endpoints:
-    web:
-      exposure:
-        include: "*"
-  endpoint:
-    prometheus:
-      enabled: true
-  prometheus:
-    metrics:
-      export:
-        enabled: true
-
+    allowed-origin-patterns: ["*"]

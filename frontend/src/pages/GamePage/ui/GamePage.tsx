@@ -4,8 +4,8 @@ import { Game } from '@/features/Game';
 import { useGameState } from '@/features/Game/model/hooks/useGameState';
 
 import React, { useState, useCallback, useEffect } from "react";
-import { TokensTypes } from "../features/Game/model/types/game.ts";
-import { GameStatus } from "@/features/Game/model/types/game";
+//import { TokensTypes } from "../../../features/Game/model/types/game";
+import { GameStatus,  TokensTypes} from "@/features/Game/model/types/game";
 
 const GamePage = () => {
   const {
@@ -55,6 +55,7 @@ const [usedTokens, setUsedTokens] = useState<TokensTypes[]>([]);
 
     useEffect(() => {
             if (!gameState || !client) return;
+            // @ts-ignore
             const myUserId = client?.userId;
             if (typeof myUserId === 'undefined') return;
 
@@ -85,6 +86,7 @@ const [usedTokens, setUsedTokens] = useState<TokensTypes[]>([]);
     setIsModalOpen(false);
     console.log("Выбраны жетоны:", tokens);
     if (client) {
+        // @ts-ignore
       client.send(JSON.stringify({
         action: "SELECT_TOKENS",
         payload: { tokens }
@@ -94,37 +96,30 @@ const [usedTokens, setUsedTokens] = useState<TokensTypes[]>([]);
 
 
 
-  const handlePlayToken = useCallback((token: TokensTypes) => {
+const handlePlayToken = useCallback((token: TokensTypes) => {
+  if (usedTokens.includes(token)) {
+    alert('Этот жетон уже был использован!');
+    return; // выходим, чтобы не отправлять повторно
+  }
 
-      if (usedTokens.includes(token)) {
-          alert('Этот жетон уже был использован!');
-          return; // выходим, чтобы не отправлять повторно
-        }
+  // оптимистично удаляем жетон из локального состояния
+  setUsedTokens(prev => [...prev, token]);
 
-      // оптимистично удаляем жетон из локального состояния
-      setUsedTokens(prev => [...prev, token]);
+  // отправляем событие на сервер
+  if (client && roomState) {
+    client.publish({
+      destination: `/app/input/session/${roomState.id}/turn`,
+      body: JSON.stringify({
+        sessionId: roomState.id,
+        // @ts-ignore
+        playerId: client.userId, // предполагается, что userId есть
+        turnType: 'PLAY_TOKEN',
+        details: { token }
+      }),
+    });
+  }
+}, [client, roomState, usedTokens]);
 
-
-
-
-      // отправляем событие на сервер (сервер должен удалить токен у игрока и разослать обновлённый gameState)
-      if (client) {
-        client.publish
-          ? client.publish({
-              destination: `/app/input/session/${roomState!.id}/turn`,
-              body: JSON.stringify({
-                sessionId: roomState!.id,
-                playerId: client?.userId, // возможно у вас другой способ
-                turnType: 'PLAY_TOKEN',
-                details: { token }
-              }),
-            })
-          : client.send(JSON.stringify({
-              action: "PLAY_TOKEN",
-              payload: { token }
-            }));
-      }
-    }, [client, roomState]);
 
 
   // Пример имитации изменения статуса игры (на практике приходит от сервера)
@@ -136,7 +131,7 @@ const [usedTokens, setUsedTokens] = useState<TokensTypes[]>([]);
     return () => clearTimeout(timer);
   }, []);
 
-  const handleCardClick = (tokenId: string) => {
+  const handleCardClick = (tokenId: TokensTypes) => {
     // Переворачиваем карточку при клике на карточку (но не на иконку)
     setFlippedTokens(prev =>
       prev.includes(tokenId)
@@ -151,15 +146,13 @@ const [usedTokens, setUsedTokens] = useState<TokensTypes[]>([]);
     }, [myTokens, hasSelectedTokens]);
 
 
-  const handleIconClick = (tokenId: string, e: React.MouseEvent) => {
-    e.stopPropagation(); // Останавливаем всплытие, чтобы карточка не переворачивалась
+  const handleIconClick = (tokenId: TokensTypes, e: React.MouseEvent) => {
+    e.stopPropagation();
 
-    // Обрабатываем выбор/отмену выбора
     if (myTokens.includes(tokenId)) {
       // Убираем из выбранных
       setMyTokens(prev => prev.filter(id => id !== tokenId));
     } else {
-      // Добавляем в выбранные, если не превышен лимит
       if (myTokens.length < 3) {
         setMyTokens(prev => [...prev, tokenId]);
       } else {
@@ -170,28 +163,100 @@ const [usedTokens, setUsedTokens] = useState<TokensTypes[]>([]);
 
 
 
-  const tokenData = [
+  const tokenData: { id: TokensTypes; name: string; description: string; frontImage: string; backImage: string }[] = [
     {
-        id: 'Бесплатный розыгрыш',
-        name: 'Бесплатный розыгрыш',
-        description: 'Вы не уплачиваете налог в этом ходе',
-        frontImage: '/src/shared/assets/images/Бесплатный розыгрыш.png',
-        backImage: '/src/shared/assets/images/Бесплатный розыгрыш.png'
-      },
-    { id: 'Хищение', name: 'Хищение', description: 'Заберите 1 фишку из банка соперника в свой банк', frontImage: '/src/shared/assets/images/Хищение.png', backImage: '/src/shared/assets/images/Хищение.png' },
-    { id: 'Иммунитет', name: 'Иммунитет', description: 'Предотвращает срабатывание жетонов против вас до следующего раунда', frontImage: '/src/shared/assets/images/Иммунитет.png', backImage: '/src/shared/assets/images/Иммунитет.png' },
-    { id: 'Истощение', name: 'Истощение', description: 'Противник должен сбросить карты и взять новую комбинацию из закрытой колоды', frontImage: '/src/shared/assets/images/Истощение.png', backImage: '/src/shared/assets/images/Истощение.png' },
-    { id: 'Доп возврат', name: 'Доп возврат', description: 'Верните 3 фишки, выплаченные в этом раунде', frontImage: '/src/shared/assets/images/Доп возврат.png', backImage: '/src/shared/assets/images/Доп возврат.png' },
-    { id: 'Общий тариф', name: 'Общий тариф', description: 'С противника взимается налог 1 фишка', frontImage: '/src/shared/assets/images/Общий тариф.png', backImage: '/src/shared/assets/images/Общий тариф.png' },
-    { id: 'Крупное мошенничество', name: 'Крупное мошенничество', description: 'Установить значение самозванца равным 6 до следующего вскрытия', frontImage: '/src/shared/assets/images/Крупное мошенничество.png', backImage: '/src/shared/assets/images/Крупное мошенничество.png' },
-    { id: 'Общий аудит', name: 'Общий аудит', description: 'Соперник облагается налогом в 2 фишки, если он спасовал в этом ходе', frontImage: '/src/shared/assets/images/Общий аудит.png', backImage: '/src/shared/assets/images/Общий аудит.png' },
-    { id: 'Эмбарго', name: 'Эмбарго', description: 'Противник в следующем ходе пасует', frontImage: '/src/shared/assets/images/Эмбарго.png', backImage: '/src/shared/assets/images/Эмбарго.png' },
-    { id: 'Уценка', name: 'Уценка', description: 'Установить значение Sylop равным 0 до следующего вскрытия', frontImage: '/src/shared/assets/images/Уценка.png', backImage: '/src/shared/assets/images/Уценка.png' },
-    { id: 'Прямая транзакция', name: 'Прямая транзакция', description: 'Противник меняется с вами картами', frontImage: '/src/shared/assets/images/Прямая транзакция.png', backImage: '/src/shared/assets/images/Прямая транзакция.png' },
-    { id: 'Возврат', name: 'Возврат', description: 'Верните 2 фишки ', frontImage: '/src/shared/assets/images/Возврат.png', backImage: '/src/shared/assets/images/Возврат.png' },
-    { id: 'Готовьте книги', name: 'Готовьте книги', description: 'Инвертируйте ранги Sabacc до следующего вскрытия', frontImage: '/src/shared/assets/images/Готовьте книги.png', backImage: '/src/shared/assets/images/Готовьте книги.png' },
-
+      id: TokensTypes.NO_TAX,
+      name: 'Бесплатный розыгрыш',
+      description: 'Вы не уплачиваете налог в этом ходе',
+      frontImage: '/src/shared/assets/images/Бесплатный розыгрыш.png',
+      backImage: '/src/shared/assets/images/Бесплатный розыгрыш.png',
+    },
+    {
+      id: TokensTypes.EMBEZZLEMENT,
+      name: 'Хищение',
+      description: 'Заберите 1 фишку из банка соперника в свой банк',
+      frontImage: '/src/shared/assets/images/Хищение.png',
+      backImage: '/src/shared/assets/images/Хищение.png',
+    },
+    {
+      id: TokensTypes.IMMUNITY,
+      name: 'Иммунитет',
+      description: 'Предотвращает срабатывание жетонов против вас до следующего раунда',
+      frontImage: '/src/shared/assets/images/Иммунитет.png',
+      backImage: '/src/shared/assets/images/Иммунитет.png',
+    },
+    {
+      id: TokensTypes.EXHAUSTION,
+      name: 'Истощение',
+      description: 'Противник должен сбросить карты и взять новую комбинацию из закрытой колоды',
+      frontImage: '/src/shared/assets/images/Истощение.png',
+      backImage: '/src/shared/assets/images/Истощение.png',
+    },
+    {
+      id: TokensTypes.EXTRA_REFUND,
+      name: 'Доп возврат',
+      description: 'Верните 3 фишки, выплаченные в этом раунде',
+      frontImage: '/src/shared/assets/images/Доп возврат.png',
+      backImage: '/src/shared/assets/images/Доп возврат.png',
+    },
+    {
+      id: TokensTypes.OTHER_PLAYERS_PAY_ONE,
+      name: 'Общий тариф',
+      description: 'С противника взимается налог 1 фишка',
+      frontImage: '/src/shared/assets/images/Общий тариф.png',
+      backImage: '/src/shared/assets/images/Общий тариф.png',
+    },
+    {
+      id: TokensTypes.IMPOSTERS_TO_SIX,
+      name: 'Крупное мошенничество',
+      description: 'Установить значение самозванца равным 6 до следующего вскрытия',
+      frontImage: '/src/shared/assets/images/Крупное мошенничество.png',
+      backImage: '/src/shared/assets/images/Крупное мошенничество.png',
+    },
+    {
+      id: TokensTypes.GENERAL_AUDIT,
+      name: 'Общий аудит',
+      description: 'Соперник облагается налогом в 2 фишки, если он спасовал в этом ходе',
+      frontImage: '/src/shared/assets/images/Общий аудит.png',
+      backImage: '/src/shared/assets/images/Общий аудит.png',
+    },
+    {
+      id: TokensTypes.EMBARGO,
+      name: 'Эмбарго',
+      description: 'Противник в следующем ходе пасует',
+      frontImage: '/src/shared/assets/images/Эмбарго.png',
+      backImage: '/src/shared/assets/images/Эмбарго.png',
+    },
+    {
+      id: TokensTypes.SYLOP_TO_ZERO,
+      name: 'Уценка',
+      description: 'Установить значение Sylop равным 0 до следующего вскрытия',
+      frontImage: '/src/shared/assets/images/Уценка.png',
+      backImage: '/src/shared/assets/images/Уценка.png',
+    },
+    {
+      id: TokensTypes.DIRECT_TRANSACTION,
+      name: 'Прямая транзакция',
+      description: 'Противник меняется с вами картами',
+      frontImage: '/src/shared/assets/images/Прямая транзакция.png',
+      backImage: '/src/shared/assets/images/Прямая транзакция.png',
+    },
+    {
+      id: TokensTypes.TAKE_TWO_CHIPS,
+      name: 'Возврат',
+      description: 'Верните 2 фишки',
+      frontImage: '/src/shared/assets/images/Возврат.png',
+      backImage: '/src/shared/assets/images/Возврат.png',
+    },
+    {
+      id: TokensTypes.COOK_THE_BOOKS,
+      name: 'Готовьте книги',
+      description: 'Инвертируйте ранги Sabacc до следующего вскрытия',
+      frontImage: '/src/shared/assets/images/Готовьте книги.png',
+      backImage: '/src/shared/assets/images/Готовьте книги.png',
+    },
   ];
+
 
   return (
       <div className={classNames(cls.game, {}, [])}>
@@ -217,6 +282,7 @@ const [usedTokens, setUsedTokens] = useState<TokensTypes[]>([]);
             fetchGameState={fetchGameState}
 
             myTokens={myTokens.filter(t => !usedTokens.includes(t))}
+            // @ts-ignore
             userId={client?.userId}
             onPlayToken={handlePlayToken}
           />
@@ -253,6 +319,7 @@ const [usedTokens, setUsedTokens] = useState<TokensTypes[]>([]);
                           className={cls.tokenIcon}
                           onClick={(e) => handleIconClick(token.id, e)}
                         >
+                        // @ts-ignore
                           {myTokens.includes(token.id) ? '🗑' : '➕'}
                         </div>
                       </div>
@@ -268,6 +335,7 @@ const [usedTokens, setUsedTokens] = useState<TokensTypes[]>([]);
                           className={cls.tokenIcon}
                           onClick={(e) => handleIconClick(token.id, e)}
                         >
+                        // @ts-ignore
                           {myTokens.includes(token.id) ? '🗑' : '➕'}
                         </div>
                       </div>

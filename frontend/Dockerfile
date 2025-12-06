@@ -1,19 +1,16 @@
-FROM node:lts-alpine3.20 as build
+# 1️⃣ Сборка фронта
+FROM node:lts-alpine3.20 AS build
+WORKDIR /app
 
-WORKDIR /app/src
+ARG VITE_API_URL
+ENV VITE_API_URL=${VITE_API_URL}
+
 COPY package*.json ./
 RUN npm ci
-COPY . ./
+COPY . .
 RUN npm run build
 
-FROM node:lts-alpine3.20
-
+# 2️⃣ Только билд без nginx
+FROM alpine:3.20
 WORKDIR /app
-RUN ls
-COPY --from=build /app/src/dist ./
-CMD node server/server.mjs
-
-FROM nginx:stable-alpine3.19
-
-COPY --from=build /app/src/dist /usr/share/nginx/html
-LABEL org.opencontainers.image.source=https://github.com/Ap1kkk/Sabacc
+COPY --from=build /app/dist /dist

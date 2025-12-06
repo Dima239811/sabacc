@@ -4,10 +4,9 @@ WORKDIR /app
 COPY . .
 RUN gradle build --no-daemon -x test
 
-FROM openjdk:21-slim-buster
+FROM eclipse-temurin:21-jdk-jammy
 
 WORKDIR /app
 COPY --from=builder /app/build/libs/*.jar app.jar
 
 CMD ["java", "-jar", "app.jar"]
-LABEL org.opencontainers.image.source=https://github.com/Ap1kkk/Sabacc

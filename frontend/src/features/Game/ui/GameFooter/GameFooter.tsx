@@ -13,13 +13,15 @@ import { GameCard, GameCardType } from '@/entities/GameCard';
 import CreditImg from '@/shared/assets/images/credit.png'
 import { useNavigate } from 'react-router-dom';
 
+import { TokensTypes } from '../../model/types/game';
+
 interface GameFooterProps {
   user: User;
   isCurentTurn: boolean;
   gameState: GameState;
   sendTurn: any;
   leaveCurrentRoom: any;
-  selectedTokens: TokenType[];
+  selectedTokens: TokensTypes[];
   onPlayToken?: (token: any) => void;
 }
 

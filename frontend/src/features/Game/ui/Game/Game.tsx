@@ -207,7 +207,7 @@ useEffect(() => {
           opponent={opponent}
           isCurentTurn={opponent?.id === gameState.currentPlayerId}
           gameState={gameState}
-          selectedTokens={opponent?.id === user?.id ? myTokens : gameState.players[playerIndex].selectedTokens || []}
+          selectedTokens={(opponent?.id === user?.id ? myTokens : (gameState.players[playerIndex] as any).selectedTokens) || []}
         />
 
         <GameTable
@@ -222,7 +222,7 @@ useEffect(() => {
           gameState={gameState}
           sendTurn={sendTurn}
           leaveCurrentRoom={leaveCurrentRoom}
-          selectedTokens={myTokens}
+          selectedTokens={myTokens as any}
           onPlayToken={handlePlayToken}
         />
       </div>
