@@ -16,7 +16,7 @@ services:
     restart: always
 
   backend:
-    image: dima429/sabacc-main-backend:v2
+    image: dima429/sabacc-main-backend:v3
     container_name: sabacc_backend
     expose:
       - "8080"
@@ -36,9 +36,19 @@ services:
     restart: always
 
   frontend:
-    image: dima429/sabacc-main-frontend:v2
+    image: dima429/sabacc-main-frontend:v3
     container_name: sabacc_frontend
     depends_on:
       - backend
+
+  nginx:
+    image: nginx:stable-alpine
+    container_name: sabacc_nginx
     ports:
       - "80:80"
+    depends_on:
+      - backend
+      - frontend
+    volumes:
+      - ./nginx/app.conf:/etc/nginx/conf.d/app.conf:ro
+      - ./frontend/dist:/usr/share/nginx/html:ro
