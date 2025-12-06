@@ -51,4 +51,3 @@ services:
       - frontend
     volumes:
       - ./app.conf:/etc/nginx/conf.d/app.conf:ro
-      - ./frontend/dist:/usr/share/nginx/html:ro
