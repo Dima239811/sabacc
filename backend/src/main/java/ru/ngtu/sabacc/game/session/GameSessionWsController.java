@@ -8,9 +8,6 @@ import ru.ngtu.sabacc.gamecore.turn.TurnDto;
 
 import static ru.ngtu.sabacc.constants.WebSocketApiEndpoint.WS_SESSION_TURN_INPUT;
 
-/**
- * @author Egor Bokov
- */
 @Controller
 @RequiredArgsConstructor
 public class GameSessionWsController {

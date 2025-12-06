@@ -7,5 +7,5 @@ data class TurnDto(
     val sessionId: Long,
     val playerId: Long,
     val turnType: TurnType,
-    var details: MutableMap<String, Any>? = null
+    var details: MutableMap<String, Any>? = null,
 )

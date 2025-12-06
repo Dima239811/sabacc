@@ -42,6 +42,24 @@ const tokenData = [
   { type: "Эмбарго", image: embargo },
 ];
 
+
+const tokenNameToEnum: Record<string, TokensTypes> = {
+  "Бесплатный розыгрыш": TokensTypes.NO_TAX,
+  "Возврат": TokensTypes.TAKE_TWO_CHIPS,
+  "Общий тариф": TokensTypes.OTHER_PLAYERS_PAY_ONE,
+  "Доп возврат": TokensTypes.EXTRA_REFUND,
+  "Хищение": TokensTypes.EMBEZZLEMENT,
+  "Общий аудит": TokensTypes.GENERAL_AUDIT,
+  "Иммунитет": TokensTypes.IMMUNITY,
+  "Истощение": TokensTypes.EXHAUSTION,
+  "Прямая транзакция": TokensTypes.DIRECT_TRANSACTION,
+  "Крупное мошенничество": TokensTypes.IMPOSTERS_TO_SIX,
+  "Уценка": TokensTypes.SYLOP_TO_ZERO,
+  "Готовьте книги": TokensTypes.COOK_THE_BOOKS,
+  "Эмбарго": TokensTypes.EMBARGO,
+};
+
+
 export const GameTokens = memo((props: GameTokensProps) => {
   const { userId, selectedTokens, sendTurn, isClickable = false } = props;
 
@@ -49,11 +67,30 @@ export const GameTokens = memo((props: GameTokensProps) => {
 
   const tokensToRender: TokensTypes[] = Array.isArray(selectedTokens) ? selectedTokens.slice(0, 3) : [];
 
-  const handleTurnToken = (typeToken: TokensTypes) => {
-    if (sendTurn) {
-      sendTurn('PLAY_TOKEN', { token: typeToken });
+  const handleTurnToken = (russianName: string) => {
+    console.log("[TOKEN CLICKED] Русское название:", russianName);
+
+    const enumValue = tokenNameToEnum[russianName];
+
+    if (!enumValue) {
+      console.error("[TOKEN ERROR] Нет соответствия для токена:", russianName);
+      return;
     }
+
+    console.log("[TOKEN ENUM] Отправляем enum:", enumValue);
+
+    if (!sendTurn) {
+      console.error("[TOKEN ERROR] sendTurn не передан!");
+      return;
+    }
+
+    console.log("[TOKEN SEND] Вызываем sendTurn('PLAY_TOKEN', { token:", enumValue, "})");
+
+    sendTurn("PLAY_TOKEN", { token: enumValue });
+
   };
+
+
 
   const getImageByType = (type: TokensTypes) => {
     const found = tokenData.find(t => t.type === type);

@@ -340,6 +340,8 @@ class GameSession(
         val playerId = turnDTO.playerId
         val player = players[playerId]!!
         val token = Token.valueOf(turnDTO.details!!["token"] as String)
+        logger.debug { "Player ${player.playerId} tokens: ${player.tokens}" }
+
         if (token !in player.tokens) {
             logger.debug { "Session $sessionId error: Player $playerId doesn't have $token to play" }
             gameMessageExchanger.sendErrorMessage(

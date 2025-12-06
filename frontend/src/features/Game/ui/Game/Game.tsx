@@ -50,6 +50,11 @@ export const Game = memo(({
   const opponent = useOpponent(user?.id, roomState);
   const navigate = useNavigate();
 
+  // Локальное состояние для жетонов
+  const [playerTokens, setPlayerTokens] = useState<string[]>();
+
+
+
   console.log('[Game] myTokens prop:', myTokens);
 
   const [modalCards, setModalCards] = useState<{ cards: Card[], type: GameCardType } | null>(null);
@@ -59,6 +64,7 @@ export const Game = memo(({
 
   // Отправка хода
   const sendTurn = useCallback((turnType: string, details: object = {}) => {
+      console.log('[SEND TURN] turnType:', turnType, 'details:', details);
     if (client && user) {
       client.publish({
         destination: `/app/input/session/${roomState.id}/turn`,
@@ -71,6 +77,15 @@ export const Game = memo(({
       });
     }
   }, [client, user, roomState]);
+
+
+
+
+useEffect(() => {
+  console.log('[Game] myTokens updated:', myTokens);
+}, [myTokens]);
+
+
 
   // Определяем, какие карты показать в модалке
   useEffect(() => {
@@ -103,6 +118,10 @@ export const Game = memo(({
       console.log('[DEBUG] Текущее состояние игры:', gameState);
     }
   }, [gameState]);
+
+
+
+
 
 
   // Закрытие модалки раунда

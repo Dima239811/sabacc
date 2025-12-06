@@ -7,9 +7,6 @@ import org.springframework.stereotype.Component;
 
 import static ru.ngtu.sabacc.constants.WebSocketApiEndpoint.SESSION_ID;
 
-/**
- * @author Egor Bokov
- */
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -41,3 +38,4 @@ public class WebSocketMessageSender {
         messagingTemplate.convertAndSend(destination, payload);
     }
 }
+
