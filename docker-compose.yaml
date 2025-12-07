@@ -39,17 +39,18 @@ services:
     image: dima429/sabacc-main-frontend:v4
     container_name: sabacc_frontend
     volumes:
-      - frontend-dist:/app/dist
-    command: sh -c "cp -r /dist/* /shared-frontend/ && tail -f /dev/null"
-
+      - frontend-dist:/shared
+    command: sh -c "cp -r /dist/* /shared/ && tail -f /dev/null"
+    depends_on:
+      - backend
 
   nginx:
     image: nginx:stable-alpine
+    container_name: sabacc_nginx
+    ports:
+      - "80:80"
     volumes:
       - ./app.conf:/etc/nginx/conf.d/:ro
       - frontend-dist:/usr/share/nginx/html:ro
     depends_on:
       - frontend
-
-volumes:
-  frontend-dist:
