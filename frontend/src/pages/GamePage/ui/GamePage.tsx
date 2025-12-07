@@ -7,6 +7,26 @@ import React, { useState, useCallback, useEffect } from "react";
 //import { TokensTypes } from "../../../features/Game/model/types/game";
 import { GameStatus,  TokensTypes} from "@/features/Game/model/types/game";
 
+
+
+
+
+import imgNoTax from '@/shared/assets/images/Бесплатный розыгрыш.png';
+import imgEmbezzlement from '@/shared/assets/images/Хищение.png';
+import imgImmunity from '@/shared/assets/images/Иммунитет.png';
+import imgExhaustion from '@/shared/assets/images/Истощение.png';
+import imgExtraRefund from '@/shared/assets/images/Доп возврат.png';
+import imgGeneralTariff from '@/shared/assets/images/Общий тариф.png';
+import imgImposters from '@/shared/assets/images/Крупное мошенничество.png';
+import imgGeneralAudit from '@/shared/assets/images/Общий аудит.png';
+import imgEmbargo from '@/shared/assets/images/Эмбарго.png';
+import imgSylopZero from '@/shared/assets/images/Уценка.png';
+import imgDirectTransaction from '@/shared/assets/images/Прямая транзакция.png';
+import imgTakeTwoChips from '@/shared/assets/images/Возврат.png';
+import imgCookBooks from '@/shared/assets/images/Готовьте книги.png';
+
+
+
 const GamePage = () => {
   const {
     client,
@@ -171,28 +191,112 @@ const handlePlayToken = useCallback((token: TokensTypes) => {
 
 
 
-  const tokenData = [
-      {
-          id: 'Бесплатный розыгрыш',
-          name: 'Бесплатный розыгрыш',
-          description: 'Вы не уплачиваете налог в этом ходе',
-          frontImage: '@/shared/assets/images/Бесплатный розыгрыш.png',
-          backImage: '@/shared/assets/images/Бесплатный розыгрыш.png'
-        },
-      { id: 'Хищение', name: 'Хищение', description: 'Заберите 1 фишку из банка соперника в свой банк', frontImage: '@/shared/assets/images/Хищение.png', backImage: '@/shared/assets/images/Хищение.png' },
-      { id: 'Иммунитет', name: 'Иммунитет', description: 'Предотвращает срабатывание жетонов против вас до следующего раунда', frontImage: '@/shared/assets/images/Иммунитет.png', backImage: '@/shared/assets/images/Иммунитет.png' },
-      { id: 'Истощение', name: 'Истощение', description: 'Противник должен сбросить карты и взять новую комбинацию из закрытой колоды', frontImage: '@/shared/assets/images/Истощение.png', backImage: '@/shared/assets/images/Истощение.png' },
-      { id: 'Доп возврат', name: 'Доп возврат', description: 'Верните 3 фишки, выплаченные в этом раунде', frontImage: '@/shared/assets/images/Доп возврат.png', backImage: '@/shared/assets/images/Доп возврат.png' },
-      { id: 'Общий тариф', name: 'Общий тариф', description: 'С противника взимается налог 1 фишка', frontImage: '@/shared/assets/images/Общий тариф.png', backImage: '@/shared/assets/images/Общий тариф.png' },
-      { id: 'Крупное мошенничество', name: 'Крупное мошенничество', description: 'Установить значение самозванца равным 6 до следующего вскрытия', frontImage: '@/shared/assets/images/Крупное мошенничество.png', backImage: '@/shared/assets/images/Крупное мошенничество.png' },
-      { id: 'Общий аудит', name: 'Общий аудит', description: 'Соперник облагается налогом в 2 фишки, если он спасовал в этом ходе', frontImage: '@/shared/assets/images/Общий аудит.png', backImage: '@/shared/assets/images/Общий аудит.png' },
-      { id: 'Эмбарго', name: 'Эмбарго', description: 'Противник в следующем ходе пасует', frontImage: '@/shared/assets/images/Эмбарго.png', backImage: '@/shared/assets/images/Эмбарго.png' },
-      { id: 'Уценка', name: 'Уценка', description: 'Установить значение Sylop равным 0 до следующего вскрытия', frontImage: '@/shared/assets/images/Уценка.png', backImage: '@/shared/assets/images/Уценка.png' },
-      { id: 'Прямая транзакция', name: 'Прямая транзакция', description: 'Противник меняется с вами картами', frontImage: '@/shared/assets/images/Прямая транзакция.png', backImage: '@/shared/assets/images/Прямая транзакция.png' },
-      { id: 'Возврат', name: 'Возврат', description: 'Верните 2 фишки ', frontImage: '@/shared/assets/images/Возврат.png', backImage: '@/shared/assets/images/Возврат.png' },
-      { id: 'Готовьте книги', name: 'Готовьте книги', description: 'Инвертируйте ранги Sabacc до следующего вскрытия', frontImage: '@/shared/assets/images/Готовьте книги.png', backImage: '@/shared/assets/images/Готовьте книги.png' },
 
-    ];
+   const tokenData = [
+       {
+           id: 'Бесплатный розыгрыш',
+           name: 'Бесплатный розыгрыш',
+           description: 'Вы не уплачиваете налог в этом ходе',
+           frontImage: imgNoTax,
+           backImage: imgNoTax
+         },
+       {
+           id: 'Хищение',
+           name: 'Хищение',
+           description: 'Заберите 1 фишку из банка соперника в свой банк',
+           frontImage: imgEmbezzlement,
+           backImage: imgEmbezzlement
+       },
+
+       {
+           id: 'Иммунитет',
+           name: 'Иммунитет',
+           description: 'Предотвращает срабатывание жетонов против вас до следующего раунда',
+           frontImage: imgImmunity,
+           backImage: imgImmunity
+       },
+
+       {
+           id: 'Истощение',
+           name: 'Истощение',
+           description: 'Противник должен сбросить карты и взять новую комбинацию из закрытой колоды',
+           frontImage: imgExhaustion,
+           backImage: imgExhaustion
+        },
+
+       {
+           id: 'Доп возврат',
+           name: 'Доп возврат',
+           description: 'Верните 3 фишки, выплаченные в этом раунде',
+           frontImage: imgExtraRefund,
+           backImage: imgExtraRefund
+       },
+
+       {
+           id: 'Общий тариф',
+           name: 'Общий тариф',
+           description: 'С противника взимается налог 1 фишка',
+           frontImage: imgGeneralTariff,
+           backImage: imgGeneralTariff
+        },
+
+       {
+           id: 'Крупное мошенничество',
+           name: 'Крупное мошенничество',
+           description: 'Установить значение самозванца равным 6 до следующего вскрытия',
+           frontImage: imgImposters,
+           backImage: imgImposters
+        },
+
+       {
+           id: 'Общий аудит',
+           name: 'Общий аудит',
+           description: 'Соперник облагается налогом в 2 фишки, если он спасовал в этом ходе',
+           frontImage: imgGeneralAudit,
+           backImage: imgGeneralAudit
+       },
+
+       {
+           id: 'Эмбарго',
+           name: 'Эмбарго',
+           description: 'Противник в следующем ходе пасует',
+           frontImage: imgEmbargo,
+           backImage: imgEmbargo
+       },
+
+       {
+           id: 'Уценка',
+           name: 'Уценка',
+           description: 'Установить значение Sylop равным 0 до следующего вскрытия',
+           frontImage: imgSylopZero,
+           backImage: imgSylopZero
+       },
+
+       {
+           id: 'Прямая транзакция',
+           name: 'Прямая транзакция',
+           description: 'Противник меняется с вами картами',
+           frontImage: imgDirectTransaction,
+           backImage: imgDirectTransaction
+       },
+
+       {
+           id: 'Возврат',
+           name: 'Возврат',
+           description: 'Верните 2 фишки ',
+           frontImage: imgTakeTwoChips,
+           backImage: imgTakeTwoChips
+       },
+
+       {
+           id: 'Готовьте книги',
+           name: 'Готовьте книги',
+           description: 'Инвертируйте ранги Sabacc до следующего вскрытия',
+           frontImage: imgCookBooks,
+           backImage: imgCookBooks
+       },
+
+     ];
 
 
 

@@ -10,8 +10,8 @@ import { AppRouteProps } from '../types/AppRouteProps';
 
 export const routeConfig: Record<AppRoutes, AppRouteProps> = {
   [AppRoutes.MAIN]: {
-    path: getRouteMain(),
-    element: <MainPage />,
+      path: getRouteMain(),
+      element: <MainPage />,
   },
   [AppRoutes.ROOLS]: {
     path: getRouteRools(),
