@@ -14,3 +14,6 @@ RUN npm run build
 FROM alpine:3.20
 WORKDIR /app
 COPY --from=build /app/dist /dist
+
+
+
