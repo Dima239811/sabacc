@@ -2,19 +2,19 @@ import { memo } from 'react';
 import { classNames } from '@/shared/lib/classNames/classNames';
 
 // изображения
-import noTax from '@/shared/assets/images/Бесплатный розыгрыш.png';
-import generalTariff from '@/shared/assets/images/Общий тариф.png';
-import takeTwoChips from '@/shared/assets/images/Возврат.png';
-import extraRefund from '@/shared/assets/images/Доп возврат.png';
-import eblazement from '@/shared/assets/images/Хищение.png';
-import generalAudit from '@/shared/assets/images/Общий аудит.png';
-import immunity from '@/shared/assets/images/Иммунитет.png';
-import exinasion from '@/shared/assets/images/Истощение.png';
-import directTransaction from '@/shared/assets/images/Прямая транзакция.png';
-import imposter from '@/shared/assets/images/Крупное мошенничество.png';
-import ucenka from '@/shared/assets/images/Уценка.png';
-import books from '@/shared/assets/images/Готовьте книги.png';
-import embargo from '@/shared/assets/images/Эмбарго.png';
+import noTax from '@/shared/assets/images/free_raffle.png';
+import generalTariff from '@/shared/assets/images/general_tariff.png';
+import takeTwoChips from '@/shared/assets/images/refund.png';
+import extraRefund from '@/shared/assets/images/extra_refund.png';
+import eblazement from '@/shared/assets/images/embezzlement.png';
+import generalAudit from '@/shared/assets/images/general_audit.png';
+import immunity from '@/shared/assets/images/immunity.png';
+import exinasion from '@/shared/assets/images/exhaustion.png';
+import directTransaction from '@/shared/assets/images/direct_transaction.png';
+import imposter from '@/shared/assets/images/major_fraud.png';
+import ucenka from '@/shared/assets/images/devalue.png';
+import books from '@/shared/assets/images/cook_books.png';
+import embargo from '@/shared/assets/images/embargo.png';
 
 import cls from './GameTokens.module.scss';
 import { TokensTypes } from '../../model/types/game';

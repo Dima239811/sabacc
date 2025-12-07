@@ -11,19 +11,19 @@ import { GameStatus,  TokensTypes} from "@/features/Game/model/types/game";
 
 
 
-import imgNoTax from '@/shared/assets/images/Бесплатный розыгрыш.png';
-import imgEmbezzlement from '@/shared/assets/images/Хищение.png';
-import imgImmunity from '@/shared/assets/images/Иммунитет.png';
-import imgExhaustion from '@/shared/assets/images/Истощение.png';
-import imgExtraRefund from '@/shared/assets/images/Доп возврат.png';
-import imgGeneralTariff from '@/shared/assets/images/Общий тариф.png';
-import imgImposters from '@/shared/assets/images/Крупное мошенничество.png';
-import imgGeneralAudit from '@/shared/assets/images/Общий аудит.png';
-import imgEmbargo from '@/shared/assets/images/Эмбарго.png';
-import imgSylopZero from '@/shared/assets/images/Уценка.png';
-import imgDirectTransaction from '@/shared/assets/images/Прямая транзакция.png';
-import imgTakeTwoChips from '@/shared/assets/images/Возврат.png';
-import imgCookBooks from '@/shared/assets/images/Готовьте книги.png';
+import imgNoTax from '@/shared/assets/images/free_raffle.png';
+import imgEmbezzlement from '@/shared/assets/images/embezzlement.png';
+import imgImmunity from '@/shared/assets/images/immunity.png';
+import imgExhaustion from '@/shared/assets/images/exhaustion.png';
+import imgExtraRefund from '@/shared/assets/images/extra_refund.png';
+import imgGeneralTariff from '@/shared/assets/images/general_tariff.png';
+import imgImposters from '@/shared/assets/images/major_fraud.png';
+import imgGeneralAudit from '@/shared/assets/images/general_audit.png';
+import imgEmbargo from '@/shared/assets/images/embargo.png';
+import imgSylopZero from '@/shared/assets/images/devalue.png';
+import imgDirectTransaction from '@/shared/assets/images/direct_transaction.png';
+import imgTakeTwoChips from '@/shared/assets/images/refund.png';
+import imgCookBooks from '@/shared/assets/images/cook_books.png';
 
 
 
