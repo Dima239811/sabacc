@@ -177,20 +177,20 @@ const handlePlayToken = useCallback((token: TokensTypes) => {
           name: 'Бесплатный розыгрыш',
           description: 'Вы не уплачиваете налог в этом ходе',
           frontImage: '/src/shared/assets/images/Бесплатный розыгрыш.png',
-          backImage: '/src/shared/assets/images/Бесплатный розыгрыш.png'
+          backImage: '@/shared/assets/images/Бесплатный розыгрыш.png'
         },
-      { id: 'Хищение', name: 'Хищение', description: 'Заберите 1 фишку из банка соперника в свой банк', frontImage: '/src/shared/assets/images/Хищение.png', backImage: '/src/shared/assets/images/Хищение.png' },
-      { id: 'Иммунитет', name: 'Иммунитет', description: 'Предотвращает срабатывание жетонов против вас до следующего раунда', frontImage: '/src/shared/assets/images/Иммунитет.png', backImage: '/src/shared/assets/images/Иммунитет.png' },
-      { id: 'Истощение', name: 'Истощение', description: 'Противник должен сбросить карты и взять новую комбинацию из закрытой колоды', frontImage: '/src/shared/assets/images/Истощение.png', backImage: '/src/shared/assets/images/Истощение.png' },
-      { id: 'Доп возврат', name: 'Доп возврат', description: 'Верните 3 фишки, выплаченные в этом раунде', frontImage: '/src/shared/assets/images/Доп возврат.png', backImage: '/src/shared/assets/images/Доп возврат.png' },
-      { id: 'Общий тариф', name: 'Общий тариф', description: 'С противника взимается налог 1 фишка', frontImage: '/src/shared/assets/images/Общий тариф.png', backImage: '/src/shared/assets/images/Общий тариф.png' },
-      { id: 'Крупное мошенничество', name: 'Крупное мошенничество', description: 'Установить значение самозванца равным 6 до следующего вскрытия', frontImage: '/src/shared/assets/images/Крупное мошенничество.png', backImage: '/src/shared/assets/images/Крупное мошенничество.png' },
-      { id: 'Общий аудит', name: 'Общий аудит', description: 'Соперник облагается налогом в 2 фишки, если он спасовал в этом ходе', frontImage: '/src/shared/assets/images/Общий аудит.png', backImage: '/src/shared/assets/images/Общий аудит.png' },
-      { id: 'Эмбарго', name: 'Эмбарго', description: 'Противник в следующем ходе пасует', frontImage: '/src/shared/assets/images/Эмбарго.png', backImage: '/src/shared/assets/images/Эмбарго.png' },
-      { id: 'Уценка', name: 'Уценка', description: 'Установить значение Sylop равным 0 до следующего вскрытия', frontImage: '/src/shared/assets/images/Уценка.png', backImage: '/src/shared/assets/images/Уценка.png' },
-      { id: 'Прямая транзакция', name: 'Прямая транзакция', description: 'Противник меняется с вами картами', frontImage: '/src/shared/assets/images/Прямая транзакция.png', backImage: '/src/shared/assets/images/Прямая транзакция.png' },
-      { id: 'Возврат', name: 'Возврат', description: 'Верните 2 фишки ', frontImage: '/src/shared/assets/images/Возврат.png', backImage: '/src/shared/assets/images/Возврат.png' },
-      { id: 'Готовьте книги', name: 'Готовьте книги', description: 'Инвертируйте ранги Sabacc до следующего вскрытия', frontImage: '/src/shared/assets/images/Готовьте книги.png', backImage: '/src/shared/assets/images/Готовьте книги.png' },
+      { id: 'Хищение', name: 'Хищение', description: 'Заберите 1 фишку из банка соперника в свой банк', frontImage: '@/shared/assets/images/Хищение.png', backImage: '@/shared/assets/images/Хищение.png' },
+      { id: 'Иммунитет', name: 'Иммунитет', description: 'Предотвращает срабатывание жетонов против вас до следующего раунда', frontImage: '@/shared/assets/images/Иммунитет.png', backImage: '@/shared/assets/images/Иммунитет.png' },
+      { id: 'Истощение', name: 'Истощение', description: 'Противник должен сбросить карты и взять новую комбинацию из закрытой колоды', frontImage: '@/shared/assets/images/Истощение.png', backImage: '@/shared/assets/images/Истощение.png' },
+      { id: 'Доп возврат', name: 'Доп возврат', description: 'Верните 3 фишки, выплаченные в этом раунде', frontImage: '@/shared/assets/images/Доп возврат.png', backImage: '@/shared/assets/images/Доп возврат.png' },
+      { id: 'Общий тариф', name: 'Общий тариф', description: 'С противника взимается налог 1 фишка', frontImage: '@/shared/assets/images/Общий тариф.png', backImage: '@/shared/assets/images/Общий тариф.png' },
+      { id: 'Крупное мошенничество', name: 'Крупное мошенничество', description: 'Установить значение самозванца равным 6 до следующего вскрытия', frontImage: '@/shared/assets/images/Крупное мошенничество.png', backImage: '@/shared/assets/images/Крупное мошенничество.png' },
+      { id: 'Общий аудит', name: 'Общий аудит', description: 'Соперник облагается налогом в 2 фишки, если он спасовал в этом ходе', frontImage: '@/shared/assets/images/Общий аудит.png', backImage: '@/shared/assets/images/Общий аудит.png' },
+      { id: 'Эмбарго', name: 'Эмбарго', description: 'Противник в следующем ходе пасует', frontImage: '@/shared/assets/images/Эмбарго.png', backImage: '@/shared/assets/images/Эмбарго.png' },
+      { id: 'Уценка', name: 'Уценка', description: 'Установить значение Sylop равным 0 до следующего вскрытия', frontImage: '@/shared/assets/images/Уценка.png', backImage: '@/shared/assets/images/Уценка.png' },
+      { id: 'Прямая транзакция', name: 'Прямая транзакция', description: 'Противник меняется с вами картами', frontImage: '@/shared/assets/images/Прямая транзакция.png', backImage: '@/shared/assets/images/Прямая транзакция.png' },
+      { id: 'Возврат', name: 'Возврат', description: 'Верните 2 фишки ', frontImage: '@/shared/assets/images/Возврат.png', backImage: '@/shared/assets/images/Возврат.png' },
+      { id: 'Готовьте книги', name: 'Готовьте книги', description: 'Инвертируйте ранги Sabacc до следующего вскрытия', frontImage: '@/shared/assets/images/Готовьте книги.png', backImage: '@/shared/assets/images/Готовьте книги.png' },
 
     ];
 
