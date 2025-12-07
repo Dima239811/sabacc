@@ -15,6 +15,9 @@ services:
 
   backend:
     image: dima429/sabacc-main-backend:v5
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
     container_name: sabacc_backend
     expose:
       - "8080"
@@ -35,6 +38,11 @@ services:
 
   frontend:
     image: dima429/sabacc-main-frontend:v5
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_URL=${VITE_API_URL}
     container_name: sabacc_frontend
     depends_on:
       - backend
