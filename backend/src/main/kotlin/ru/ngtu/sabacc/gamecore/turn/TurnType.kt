@@ -10,5 +10,6 @@ enum class TurnType {
     DISCARD_BLOOD,
     PLAY_TOKEN,
     SELECT_DICE,
-    AWAITING_DICE
+    AWAITING_DICE,
+    SELECT_TOKEN
 }

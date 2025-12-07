@@ -13,9 +13,8 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
 public class SabaccApplication {
     private static final Logger log = LoggerFactory.getLogger(SabaccApplication.class);
 
+
     public static void main(String[] args) {
-        log.info("main в бэкенде запущен");
-        log.info("dima");
         SpringApplication.run(SabaccApplication.class, args);
     }
 

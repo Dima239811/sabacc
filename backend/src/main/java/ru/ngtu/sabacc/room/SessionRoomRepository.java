@@ -10,16 +10,27 @@ import java.util.Optional;
 @RepositoryRestResource(exported = false)
 public interface SessionRoomRepository extends JpaRepository<SessionRoom, Long> {
     List<SessionRoom> findAllByPlayerFirstIdOrPlayerSecondId(Long playerFirst_id, Long playerSecond_id);
-    Optional<SessionRoom> findByPlayerFirstIdAndStatusNot(Long playerId, SessionRoomStatus status);
-    Optional<SessionRoom> findByPlayerFirstIdOrPlayerSecondIdAndStatusNot(Long playerFirstId,Long playerSecondId, SessionRoomStatus status);
+    //Optional<SessionRoom> findByPlayerFirstIdAndStatusNot(Long playerId, SessionRoomStatus status);
+    List<SessionRoom> findAllByPlayerFirstIdAndStatusNot(Long playerId, SessionRoomStatus status);
+
+//    Optional<SessionRoom> findByPlayerFirstIdOrPlayerSecondIdAndStatusNot(Long playerFirstId,Long playerSecondId, SessionRoomStatus status);
 
     @Query("""
-        select r
-        from SessionRoom r
-        where
-            r.status=:availableStatus
-        and
-            r.playerSecond is null
-    """)
+    select r
+    from SessionRoom r
+    where
+        r.status=:availableStatus
+    and
+        r.playerSecond is null
+    and
+        r.status <> 'FINISHED'
+""")
     List<SessionRoom> findAllAvailableForJoin(SessionRoomStatus availableStatus);
+
+
+    List<SessionRoom> findByPlayerFirstIdOrPlayerSecondIdAndStatusNot(
+            Long playerFirstId,
+            Long playerSecondId,
+            SessionRoomStatus status
+    );
 }

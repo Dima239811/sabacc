@@ -1,0 +1,56 @@
+.UserExistsModal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 27vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(180deg, #00206C, #005AAB, #020029);
+  padding: 60px;
+  border-radius: 76px;
+  backdrop-filter: blur(40px);
+  color: #FFFFFF;
+  font-family: 'IBM Plex Mono', monospace;
+  text-align: center;
+  z-index: 200;
+  overflow-y: auto;
+}
+
+.UserExistsModal h2 {
+  margin-bottom: 20px;
+  font-size: 3rem;
+  font-weight: 600;
+  color: #FF4444;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.UserExistsModal p {
+  margin-bottom: 40px;
+  font-size: 1.5rem;
+  color: #FFFFFF;
+  line-height: 1.4;
+  letter-spacing: 1px;
+}
+
+.UserExistsModal button {
+  background: linear-gradient(to right, #6073A0, #0A193A);
+  color: #FFFFFF;
+  padding: 18px 45px;
+  border: 2px solid #FFFFFF;
+  border-radius: 35px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 1.3rem;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.UserExistsModal button:hover {
+  background: linear-gradient(to right, #0A193A, #6073A0);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+}

@@ -13,16 +13,23 @@ import { GameCard, GameCardType } from '@/entities/GameCard';
 import CreditImg from '@/shared/assets/images/credit.png'
 import { useNavigate } from 'react-router-dom';
 
+import { TokensTypes } from '../../model/types/game';
+
 interface GameFooterProps {
   user: User;
   isCurentTurn: boolean;
   gameState: GameState;
   sendTurn: any;
   leaveCurrentRoom: any;
+  selectedTokens: TokensTypes[];
+  onPlayToken?: (token: any) => void;
 }
 
 export const GameFooter = memo((props: GameFooterProps) => {
-  const { user, isCurentTurn, gameState, sendTurn, leaveCurrentRoom, ...otherProps } = props;
+  const { user, isCurentTurn, gameState, sendTurn, leaveCurrentRoom, selectedTokens, onPlayToken } = props;
+
+  console.log('[GameFooter] selectedTokens prop:', props.selectedTokens);
+
   const i = gameState?.players[0].playerId == user?.id ? 0 : 1;
   const navigate = useNavigate()
 
@@ -55,7 +62,12 @@ export const GameFooter = memo((props: GameFooterProps) => {
       </div>
 
       <div className={cls.controls}>
-        <GameTokens userId={user?.id} tokens={gameState.players[i].tokens} isClickable sendTurn={sendTurn} />
+        <GameTokens
+        userId={user?.id}
+        selectedTokens={props.selectedTokens}
+        isClickable sendTurn={sendTurn}
+        onPlayToken={onPlayToken}
+        />
       </div>
 
       <button className={cls.button} onClick={handleLeaveGame}><img src={GiveUpmg} alt="" /></button>

@@ -7,9 +7,6 @@ import org.springframework.stereotype.Component;
 
 import static ru.ngtu.sabacc.constants.WebSocketApiEndpoint.SESSION_ID;
 
-/**
- * @author Egor Bokov
- */
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -28,6 +25,9 @@ public class WebSocketMessageSender {
     }
 
     public void sendMessageSessionBroadcast(Long sessionId, String destinationTemplate, Object payload) {
+        if (sessionId == null) {
+            throw new IllegalArgumentException("sessionId must not be null");
+        }
         String replacedDestination = destinationTemplate.replace(SESSION_ID, sessionId.toString());
         log.debug("WS: [{}] sending message broadcast to session: session={} payload={}", replacedDestination, sessionId,  payload.toString());
         messagingTemplate.convertAndSend(replacedDestination, payload);
@@ -38,3 +38,4 @@ public class WebSocketMessageSender {
         messagingTemplate.convertAndSend(destination, payload);
     }
 }
+

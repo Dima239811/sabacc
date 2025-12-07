@@ -33,4 +33,15 @@ public class SessionRoom extends BaseEntity {
     @Column(name = "is_player_second_connected", nullable = false)
     @Builder.Default
     private boolean isPlayerSecondConnected = false;
+
+    @Override
+    public String toString() {
+        return "SessionRoom{" +
+                "status=" + status +
+                ", playerFirst=" + playerFirst +
+                ", playerSecond=" + playerSecond +
+                ", isPlayerFirstConnected=" + isPlayerFirstConnected +
+                ", isPlayerSecondConnected=" + isPlayerSecondConnected +
+                '}';
+    }
 }

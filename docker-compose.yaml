@@ -1,113 +1,60 @@
-version: "3.4"
-
-x-project-name:
-  &project-name sabacc
-
-x-host:
-  &host 103.90.75.122:88
-x-protocol:
-  &protocol http
-
-x-db-host:
-  &db-host postgres
-x-db-username:
-  &db-username postgres
-x-db-password:
-  &db-password postgres
-
-x-profiles:
-#  &profiles prod
-  &profiles dev  # ← Изменили на dev для разработки
-
 services:
-  prometheus:
-    image: prom/prometheus:latest
-    container_name: prometheus
-    volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
-    ports:
-      - "9090:9090"
-
-  grafana:
-    image: grafana/grafana:latest
-    container_name: grafana
-    ports:
-      - "3000:3000"
-      - "35729:35729"
-    volumes:
-      - ./grafana-data:/var/lib/grafana
-
-  backend:
-    image: ghcr.io/ap1kkk/sabacc/backend:latest
-    build:
-      context: backend
-#      dockerfile: Dockerfile
-      dockerfile: Dockerfile.dev  # ← Используем dev Dockerfile
-    container_name: sabacc_backend
-    ports:
-      - "8080:8080"
-    depends_on:
-      - postgres
-
-
-    environment:
-      SERVER_HOST: *host
-      SERVER_PROTOCOL: *protocol
-
-      SPRING_PROFILES_ACTIVE: *profiles
-
-      #     Database
-      SPRING_DATASOURCE_USERNAME: *db-username
-      SPRING_DATASOURCE_PASSWORD: *db-password
-      SPRING_DATASOURCE_DATABASE_HOST: *db-host
-      SPRING_DATASOURCE_DATABASE_PORT: 5432
-      SPRING_DATASOURCE_DATABASE_NAME: *project-name
-      SPRING_DEVTOOLS_RESTART_ENABLED: "true"  # ← Включаем DevTools
-      GRADLE_OPTS: "-DskipTests"
-      SPRING_DOCKER_COMPOSE_ENABLED: "false"
-
-    volumes:
-      - ./backend/src:/app/src
-      - ./backend/build.gradle:/app/build.gradle
-      - ./backend/settings.gradle:/app/settings.gradle
-      - ./backend/gradle:/app/gradle
-
   postgres:
-    restart: always
     image: postgres:14.8-alpine3.18
     container_name: sabacc_postgres
     environment:
-      POSTGRES_PASSWORD: *db-password
-      POSTGRES_USER: *db-username
-      POSTGRES_DB: *project-name
-    ports:
-      - "5432:5432"
-
-    volumes:
-      - ./postgres-data:/var/lib/postgresql/data
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-sabacc}
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U $${POSTGRES_USER}" ]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
       interval: 5s
       timeout: 5s
       retries: 10
+    restart: always
+
+  backend:
+    image: dima429/sabacc-main-backend:v5
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: sabacc_backend
+    expose:
+      - "8080"
+    depends_on:
+      - postgres
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-postgres}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      SPRING_DATASOURCE_DATABASE_HOST: postgres
+      SPRING_DATASOURCE_DATABASE_PORT: 5432
+      SPRING_DATASOURCE_DATABASE_NAME: ${POSTGRES_DB:-sabacc}
+      PUBLIC_IP: ${PUBLIC_IP}
+      SERVER_HOST: 0.0.0.0
+      SERVER_PROTOCOL: http
+      CRON_USER_CLEANUP: ${CRON_USER_CLEANUP}
+    restart: always
 
   frontend:
-    image: ghcr.io/ap1kkk/sabacc/frontend:latest
+    image: dima429/sabacc-main-frontend:v5
     build:
-      context: frontend
-      dockerfile: Dockerfile.dev  # ← Используем dev Dockerfile
-#      dockerfile: Dockerfile
-
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_URL=${VITE_API_URL}
     container_name: sabacc_frontend
-#    ports:
-#      - "5173:5173"
+    depends_on:
+      - backend
+
+  nginx:
+    image: nginx:stable-alpine
+    container_name: sabacc_nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+      - frontend
     volumes:
-      - ./nginx:/etc/nginx/conf.d
-      - ./frontend:/app  # ← Hot reload для фронтенда
-      - /app/node_modules  # ← Исключаем node_modules из volume
-
-    command: npm run dev -- --host 0.0.0.0
-
-    environment:
-      - CHOKIDAR_USEPOLLING=true  # ← Важно для Docker
-      - VITE_API_URL=http://localhost:8080/api
+      - ./app.conf:/etc/nginx/conf.d/:ro
+      - ./frontend/dist:/usr/share/nginx/html:ro

@@ -1,3 +1,6 @@
+## Вроде как заходит в игру, проблема на фронте с подписками в файлах useWebSocketGame, useWebSocketSubscription возможно где-то еще
+
+
 # Backend
 
 ## Запуск
@@ -33,6 +36,7 @@ PlayerId = UserId
 Префикс будет такой: `/user/{userId}`, где userId - Id игрока
 
 Получение текущего состояния игры: `http://localhost:8080/api/v1/room/game/current-state?sessionId=666`
+
 
 ### Примеры DTO
 

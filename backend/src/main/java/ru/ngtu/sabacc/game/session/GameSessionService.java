@@ -24,9 +24,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import static ru.ngtu.sabacc.constants.WebSocketApiEndpoint.WS_GAME_PROGRESS_QUEUE;
 
-/**
- * @author Egor Bokov
- */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -46,7 +43,12 @@ public class GameSessionService {
     }
 
     public void makeTurn(TurnDto turnDTO) {
-        long sessionId = turnDTO.getSessionId();
+        log.info("tryMakeTurn called! PlayerId: {}, TurnType: {}, Details: {}",
+                turnDTO.getPlayerId(),
+                turnDTO.getTurnType(),
+                turnDTO.getDetails());
+
+        Long sessionId = turnDTO.getSessionId();
         checkIfSessionExists(sessionId);
         activeSessions.get(sessionId).tryMakeTurn(turnDTO);
     }

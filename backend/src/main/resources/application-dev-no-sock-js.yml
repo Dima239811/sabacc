@@ -1,5 +1,0 @@
-websocket:
-  stomp:
-    sock-js-enabled: false
-  game:
-    sock-js-enabled: false

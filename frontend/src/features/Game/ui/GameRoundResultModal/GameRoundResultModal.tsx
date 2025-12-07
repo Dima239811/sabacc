@@ -24,25 +24,30 @@ export const GameRoundResultModal = memo(({ roundResult, roomState, onClose }: G
 
   return (
     <div className={cls.GameRoundResultModal} onClick={onClose}>
-      <div className={cls.modalСontent}>
+      <div className={cls.modalContent} onClick={(e) => e.stopPropagation()}>
         <img src={BackgroundTable} className={cls.background} />
-        <h1>Результаты раунда</h1>
-        <ul className={cls.list}>
-          {roundResult.players.map((player: any) => (
-            <li key={player.playerId} className={cls.container}>
-              <h4 className={cls.nickname}>
-                <span>{getUsernameById[player.playerId]}</span>
-              </h4>
+        <div className={cls.content}>
+          <div className={cls.title}>РЕЗУЛЬТАТ РАУНДА</div>
+          <ul className={cls.list}>
+            {roundResult.players.map((player: any) => (
+              <li key={player.playerId} className={cls.container}>
+                <h4 className={cls.nickname}>
+                  <span>{getUsernameById[player.playerId]}</span>
+                </h4>
 
-              <div className={cls.credit}>
-                <span>потрачено {player.spentChips}</span>
-                <div className={cls.imgContainer}>
-                  <img src={CreditImg} />
+                <div className={cls.credit}>
+                  <span>потрачено {player.spentChips}</span>
+                  <div className={cls.imgContainer}>
+                    <img src={CreditImg} />
+                  </div>
                 </div>
-              </div>
-            </li>
-          ))}
-        </ul>
+              </li>
+            ))}
+          </ul>
+          <button className={cls.closeButton} onClick={onClose}>
+            ЗАКРЫТЬ
+          </button>
+        </div>
       </div>
     </div>
   );
