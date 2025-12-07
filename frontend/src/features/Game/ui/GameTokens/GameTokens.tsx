@@ -60,6 +60,14 @@ const tokenNameToEnum: Record<string, TokensTypes> = {
   "Эмбарго": TokensTypes.EMBARGO,
 };
 
+// формируем массив токенов, привязанный к enum
+const tokens = tokenData.map(t => ({
+  name: t.type,
+  image: t.image,
+  type: tokenNameToEnum[t.type], // ← теперь это TokensTypes
+}));
+
+
 
 export const GameTokens = memo((props: GameTokensProps) => {
   const { userId, selectedTokens, sendTurn, onPlayToken, isClickable = false } = props;
@@ -89,22 +97,24 @@ export const GameTokens = memo((props: GameTokensProps) => {
 
   return (
     <div className={classNames(cls.controlsContainer, {}, [])}>
-      {tokensToRender.map((type) => {
-        const image = getImageByType(type);
-        if (!image) return null;
+      {tokensToRender.map((enumType) => {
+        const token = tokens.find(t => t.type === enumType);
+        if (!token) return null;
+
         return (
           <button
-            key={String(type)}
+            key={String(enumType)}
             className={classNames(cls.cardButton, { [cls.clickable]: isClickable }, [])}
-            onClick={() => handleTurnToken(type)}
+            onClick={() => handleTurnToken(token.name)} // ← теперь строка для tokenNameToEnum
             type="button"
-            aria-label={`token-${String(type)}`}
-            title={String(type)}
+            aria-label={`token-${token.name}`}
+            title={token.name}
           >
-            <img src={image} alt={`Token ${String(type)}`} />
+            <img src={token.image} alt={token.name} />
           </button>
         );
       })}
+
     </div>
   );
 });
