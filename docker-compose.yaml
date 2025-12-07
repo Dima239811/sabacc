@@ -40,3 +40,15 @@ services:
     container_name: sabacc_frontend
     depends_on:
       - backend
+
+  nginx:
+    image: nginx:stable-alpine
+    container_name: sabacc_nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+      - frontend
+    volumes:
+      - ./app.conf:/etc/nginx/conf.d/app.conf:ro
+      - ./frontend/dist:/usr/share/nginx/html:ro
