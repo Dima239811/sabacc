@@ -176,7 +176,7 @@ const handlePlayToken = useCallback((token: TokensTypes) => {
           id: 'Бесплатный розыгрыш',
           name: 'Бесплатный розыгрыш',
           description: 'Вы не уплачиваете налог в этом ходе',
-          frontImage: '/src/shared/assets/images/Бесплатный розыгрыш.png',
+          frontImage: '@/shared/assets/images/Бесплатный розыгрыш.png',
           backImage: '@/shared/assets/images/Бесплатный розыгрыш.png'
         },
       { id: 'Хищение', name: 'Хищение', description: 'Заберите 1 фишку из банка соперника в свой банк', frontImage: '@/shared/assets/images/Хищение.png', backImage: '@/shared/assets/images/Хищение.png' },
