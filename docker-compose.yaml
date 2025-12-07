@@ -54,3 +54,6 @@ services:
       - frontend-dist:/usr/share/nginx/html:ro
     depends_on:
       - frontend
+
+volumes:
+  frontend-dist:
