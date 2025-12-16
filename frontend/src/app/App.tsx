@@ -1,5 +1,5 @@
 import './styles/index.scss'
-import { Suspense, useEffect } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import AppRouter from './providers/Router/ui/AppRouter';
 import { setUser } from '@/features/Auth/model/slice/authSlice';
 import { useAppDispatch } from '@/shared/lib/hooks/useAppDispatch';
@@ -8,9 +8,8 @@ import { USER_LOCALSTORAGE_KEY } from '@/shared/const/localstorage';
 import MainImg from '@/shared/assets/images/main.jpg';
 
 const App = () => {
-    console.log("фронтенд запущен")
-    console.log("новая запись")
   const dispatch = useAppDispatch();
+  const [isUserLoaded, setIsUserLoaded] = useState(false);
   
   useEffect(() => {
     const userData = localStorage.getItem(USER_LOCALSTORAGE_KEY);
@@ -18,7 +17,12 @@ const App = () => {
       const user: User = JSON.parse(userData);
       dispatch(setUser(user))
     }
+    setIsUserLoaded(true);
   }, [])
+
+  if (!isUserLoaded) {
+      return <div>Loading...</div>; // не рендерим маршруты пока user не восстановлен
+  }
 
   return (
     <div id="app" className={'app'}>

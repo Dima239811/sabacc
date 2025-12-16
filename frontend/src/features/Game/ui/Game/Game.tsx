@@ -19,8 +19,6 @@ import { getRouteMain } from '@/shared/const/router';
 import { GameTable } from '../GameTable/GameTable';
 import { TokensTypes } from '../../model/types/game';
 
-
-
 interface GameProps {
   client: Client;
   gameState: GameState;
@@ -55,22 +53,12 @@ export const Game = memo(({
   const opponent = useOpponent(user?.id, roomState);
   const navigate = useNavigate();
 
-  // Локальное состояние для жетонов
-  const [playerTokens, setPlayerTokens] = useState<string[]>();
-
-
-const playerIndex = gameState.players[0].playerId === user?.id ? 0 : 1;
-
-  console.log('[Game] myTokens prop:', myTokens);
-
   const [modalCards, setModalCards] = useState<{ cards: Card[], type: GameCardType } | null>(null);
-
-  // Управление модалками через одно состояние
   const [currentModal, setCurrentModal] = useState<'ROUND' | 'GAME' | null>(null);
 
-  // Отправка хода
+  const playerIndex = gameState.players[0].playerId === user?.id ? 0 : 1;
+
   const sendTurn = useCallback((turnType: string, details: object = {}) => {
-      console.log('[SEND TURN] turnType:', turnType, 'details:', details);
     if (client && user) {
       client.publish({
         destination: `/app/input/session/${roomState.id}/turn`,
@@ -84,40 +72,12 @@ const playerIndex = gameState.players[0].playerId === user?.id ? 0 : 1;
     }
   }, [client, user, roomState]);
 
+  // IMPORTANT: do not publish PLAY_TOKEN here to avoid duplicate publishes.
+  // Publishing is done by the top-level (GamePage) via onPlayToken prop.
+  const handlePlayToken = useCallback((token: TokensTypes) => {
+    onPlayToken?.(token);
+  }, [onPlayToken]);
 
-
-
- const handlePlayToken = useCallback((token: TokensTypes) => {
-   console.log('[Game] play token:', token);
-
-   // Передаем на верхний уровень для обновления состояния
-   onPlayToken?.(token);
-
-   // Отправка хода на сервер
-   if (client && user) {
-     client.publish({
-       destination: `/app/input/session/${roomState.id}/turn`,
-       body: JSON.stringify({
-         sessionId: roomState.id,
-         playerId: user.id,
-         turnType: 'PLAY_TOKEN',
-         details: { token },
-       }),
-     });
-   }
- }, [client, roomState, user?.id, onPlayToken]);
-
-
-
-
-
-useEffect(() => {
-  console.log('[Game] myTokens updated:', myTokens);
-}, [myTokens]);
-
-
-
-  // Определяем, какие карты показать в модалке
   useEffect(() => {
     const playerIndex = gameState.players[0].playerId === user?.id ? 0 : 1;
     if (gameState.players[playerIndex].bloodCards.length > 1) {
@@ -129,14 +89,12 @@ useEffect(() => {
     }
   }, [gameState, user?.id]);
 
-  // Показ модалки раунда
   useEffect(() => {
     if (roundResult) {
       setCurrentModal('ROUND');
     }
   }, [roundResult]);
 
-  // Показ модалки игры, если победитель есть и нет открытой модалки раунда
   useEffect(() => {
     if (winnerId && !roundResult) {
       setCurrentModal('GAME');
@@ -149,16 +107,10 @@ useEffect(() => {
     }
   }, [gameState]);
 
-
-
-
-
-
-  // Закрытие модалки раунда
   const handleCloseRoundModal = () => {
     fetchGameState();
     if (winnerId) {
-      setCurrentModal('GAME'); // после раунда показываем модалку игры
+      setCurrentModal('GAME');
     } else {
       setCurrentModal(null);
     }
@@ -166,7 +118,6 @@ useEffect(() => {
 
   return (
     <>
-      {/* Модалка раунда */}
       {currentModal === 'ROUND' && (
         <GameRoundResultModal
           roundResult={roundResult}
@@ -175,7 +126,6 @@ useEffect(() => {
         />
       )}
 
-      {/* Модалка результатов игры */}
       {currentModal === 'GAME' && (
         <GameResultModal
           winnerId={winnerId!}
@@ -183,7 +133,6 @@ useEffect(() => {
         />
       )}
 
-      {/* Модалка карт */}
       {modalCards && (
         <GameCardModal
           cards={modalCards.cards}
@@ -192,7 +141,6 @@ useEffect(() => {
         />
       )}
 
-      {/* Модалка кубиков */}
       {diceDetails && (
         <GameDiceModal
           first={diceDetails.first}
@@ -201,7 +149,6 @@ useEffect(() => {
         />
       )}
 
-      {/* Основной интерфейс игры */}
       <div className={classNames(cls.container, {}, [])}>
         <GameHeader
           opponent={opponent}

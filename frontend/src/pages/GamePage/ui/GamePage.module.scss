@@ -229,3 +229,48 @@
   color: #FFFFFF;
 }
 
+
+
+
+
+/* Тёмно-красная (немного потемнее) версия .errorModal */
+.errorModal {
+  width: 420px;
+  max-width: calc(100% - 40px);
+  background: linear-gradient(135deg, #d43a3a 0%, #9b1b1b 100%); /* от чуть светлее к насыщенному тёмно-красному */
+  border-radius: 12px;
+  padding: 22px;
+  box-shadow: 0 18px 48px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.02);
+  border: 1px solid rgba(0,0,0,0.45);
+  color: #fff;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Заголовок и сообщение — повысим контраст и добавим тень */
+.errorTitle {
+  color: #fff6f6;
+  font-weight: 700;
+  font-size: 20px;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.6);
+}
+
+.errorMessage {
+  color: rgba(255,244,244,0.95);
+  font-size: 14px;
+  line-height: 1.45;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.45);
+}
+
+/* Кнопка — яркий акцент на тёмном фоне */
+.errorModal .confirmButton {
+  padding: 10px 26px;
+  font-size: 15px;
+  background: linear-gradient(90deg, #ff8a80 0%, #ff5252 100%);
+  border: 1px solid rgba(255,255,255,0.06);
+  color: #fff;
+  box-shadow: 0 8px 18px rgba(0,0,0,0.45);
+}
+
