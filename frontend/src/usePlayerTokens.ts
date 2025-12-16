@@ -1,6 +1,5 @@
-// usePlayerTokens.ts - ОБНОВЛЕННЫЙ ВАРИАНТ С ОТЛАДКОЙ
 import { useState, useEffect, useCallback } from 'react';
-import { TokensTypes } from '../types/game';
+import { TokensTypes } from '@/features/Game/model/types/game.ts';
 
 export const usePlayerTokens = (roomId?: string, userId?: number) => {
   console.log('[usePlayerTokens] Вызван с:', { roomId, userId });

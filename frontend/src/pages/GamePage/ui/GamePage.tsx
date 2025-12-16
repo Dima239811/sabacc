@@ -99,12 +99,13 @@ const GamePage: React.FC = () => {
     if (currentUser?.id != null) return String(currentUser.id);
     // @ts-ignore client.userId may be string/number/undefined; normalize to string if present
     if (typeof client?.userId !== 'undefined' && client?.userId !== null) {
-      // try to extract number if it's like "/user/3"
+      // @ts-ignore
       const s = String(client.userId);
       const m = s.match(/(\d+)/);
       return m ? m[0] : s;
     }
     return undefined;
+    // @ts-ignore
   }, [currentUser, client?.userId]);
 
   // Load persisted selection / used tokens when room or user changes
