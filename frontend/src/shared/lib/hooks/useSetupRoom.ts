@@ -22,70 +22,75 @@ export const useSetupRoom = (playerId: number) => {
     };
 
     const setupRoomAndWebSocket = async () => {
-      await leaveAllRooms();
-
-      await pause(1000);
+      // НЕ вызываем leaveAllRooms автоматически сразу — сначала проверим localStorage
+      await pause(300); // небольшая пауза чтобы все инициализации успели завершиться
 
       let roomId: string | undefined = localStorage.getItem('roomId') ?? undefined;
 
       if (roomId) {
+        // Если есть сохранённый roomId — попробуем проверить его валидность
         try {
           const data = (await axios.get(`${API_BASE}/${roomId}`)).data;
-          if (
-            data.status === 'FINISHED' ||
-            (data.playerFirst?.id !== playerId && data.playerSecond?.id !== playerId)
-          ) {
-            console.log('Комната завершена или игрок не является участником — удаляем roomId из localStorage');
+          const amIPlayer = data.playerFirst?.id === playerId || data.playerSecond?.id === playerId;
+          const isFinished = data.status === 'FINISHED';
+
+          if (!amIPlayer || isFinished) {
+            // если мы не участник или комната завершена — удаляем локальный roomId и сообщаем серверу
+            console.log('[useSetupRoom] saved roomId не валиден. Очищаем и выходим из всех комнат.', { roomId, amIPlayer, isFinished });
             localStorage.removeItem('roomId');
+            await leaveAllRooms();
             roomId = undefined;
+          } else {
+            // валидная комната — используем её, не вызываем leaveAllRooms и не трогаем сервер
+            console.log('[useSetupRoom] найден валидный saved roomId, используем его без leaveAllRooms:', roomId);
+            setSessionId(+roomId);
+            return; // мы восстановили сессию — заканчиваем setup
           }
         } catch (error) {
-          console.error('Ошибка при получении информации о комнате:', error);
+          console.warn('[useSetupRoom] ошибка при проверке saved roomId — очищаем и вызываем leaveAllRooms', error);
           localStorage.removeItem('roomId');
+          await leaveAllRooms();
           roomId = undefined;
         }
       }
 
-      if (!roomId) {
-        try {
-          const availableRoomsResponse = await axios.get(`${API_BASE}/available-for-join?userId=${playerId}`);
-          const availableRooms = availableRoomsResponse.data;
+      // Если здесь roomId нет — продолжаем поиск доступных комнат / создание новой
+      try {
+        await pause(1000);
 
-          // Логирование доступных комнат
-          console.log('[DEBUG] Доступные комнаты:', availableRooms.map((r: any) => ({
-            id: r.id,
-            status: r.status,
-            playerFirst: r.playerFirst?.id,
-            playerSecond: r.playerSecond?.id,
-          })));
+        let availableRoomsResponse = await axios.get(`${API_BASE}/available-for-join?userId=${playerId}`);
+        let availableRooms = availableRoomsResponse.data;
 
-          roomId = availableRooms.length ? availableRooms[0].id : undefined;
+        console.log('[useSetupRoom] доступные комнаты:', availableRooms.map((r: any) => ({ id: r.id, status: r.status })));
 
-          if (roomId) {
-            const roomToJoin = availableRooms.find((r: any) => r.id === roomId);
-            console.log('[DEBUG] Присоединяемся к комнате:', roomToJoin);
+        roomId = availableRooms.length ? availableRooms[0].id : undefined;
 
-            try {
-              await axios.post(`${API_BASE}/${roomId}/join?userId=${playerId}`);
-              console.log('[INFO] Успешно присоединились к комнате', roomId);
-            } catch (error: any) {
-              console.error('[ERROR] Ошибка при join:', error);
-              roomId = undefined;
-            }
-          } else {
-            const roomResponse = await axios.post(`${API_BASE}/create?userId=${playerId}`);
-            roomId = roomResponse.data.id;
-            console.log('[INFO] Создана новая комната:', roomId, 'статус:', roomResponse.data.status);
+        if (roomId) {
+          const roomToJoin = availableRooms.find((r: any) => r.id === roomId);
+          console.log('[useSetupRoom] Присоединяемся к комнате:', roomToJoin);
+          try {
+            await axios.post(`${API_BASE}/${roomId}/join?userId=${playerId}`);
+            console.log('[useSetupRoom] Успешно присоединились к комнате', roomId);
+          } catch (error: any) {
+            console.error('[useSetupRoom] Ошибка при join:', error);
+            roomId = undefined;
           }
-        } catch (error) {
-          console.error('[ERROR] Ошибка при получении доступных комнат или создании:', error);
-          await leaveAllRooms();
         }
-      }
 
-      if (roomId) {
-        localStorage.setItem('roomId', roomId);
-        setSessionId(+roomId);
+        if (!roomId) {
+          const roomResponse = await axios.post(`${API_BASE}/create?userId=${playerId}`);
+          roomId = roomResponse.data.id;
+          console.log('[useSetupRoom] Создана новая комната:', roomId, 'статус:', roomResponse.data.status);
+        }
+
+        if (roomId) {
+          localStorage.setItem('roomId', roomId);
+          setSessionId(+roomId);
+        }
+      } catch (error) {
+        console.error('[useSetupRoom] Ошибка при получении доступных комнат или создании:', error);
+        // безопасно очищаем и пробуем убрать старые соединения
+        await leaveAllRooms();
       }
     };
 
