@@ -9,7 +9,6 @@ interface BuildOptions {
 export default ({ mode }: BuildOptions) => {
   const isDev = mode === 'development';
   const port = process.env.VITE_PORT || 5173;
-  // По умолчанию везде используем относительный префикс /api
   const apiUrl = process.env.VITE_API_URL ?? '/api';
   console.log(`API URL: ${apiUrl}`)
 

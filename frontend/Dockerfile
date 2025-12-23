@@ -1,4 +1,3 @@
-# 1️⃣ Сборка фронта
 FROM node:lts-alpine3.20 AS build
 WORKDIR /app
 
@@ -10,7 +9,6 @@ RUN npm ci
 COPY . .
 RUN npm run build
 
-# 2️⃣ Только билд без nginx
 FROM alpine:3.20
 WORKDIR /app
 COPY --from=build /app/dist /dist

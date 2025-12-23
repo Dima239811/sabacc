@@ -1,6 +1,3 @@
-## Вроде как заходит в игру, проблема на фронте с подписками в файлах useWebSocketGame, useWebSocketSubscription возможно где-то еще
-
-
 # Backend
 
 ## Запуск

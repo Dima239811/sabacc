@@ -37,3 +37,4 @@ security:
       - "http://localhost:*"
       - "http://45.89.66.57"
     allow-credentials: true
+
